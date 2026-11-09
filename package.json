@@ -1,0 +1,10 @@
+{
+  "name": "grades-calculator",
+  "private": true,
+  "type": "module",
+  "workspaces": ["calc", "server", "web"],
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

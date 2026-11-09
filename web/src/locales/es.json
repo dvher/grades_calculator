@@ -1,0 +1,114 @@
+{
+  "app": {
+    "title": "Calculadora de Notas"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "email": "Correo",
+    "password": "Contraseña",
+    "passwordHint": "Mínimo 8 caracteres"
+  },
+  "classes": {
+    "select": "Asignatura",
+    "new": "Nueva asignatura",
+    "newName": "Nueva asignatura",
+    "empty": "Aún no tienes asignaturas. Crea una para empezar a calcular.",
+    "delete": "Eliminar asignatura",
+    "confirmDelete": "¿Eliminar \"{{name}}\"? No se puede deshacer.",
+    "name": "Nombre de la asignatura"
+  },
+  "editor": {
+    "evaluations": "Evaluaciones",
+    "name": "Nombre",
+    "weight": "Ponderación %",
+    "grade": "Nota",
+    "pending": "Pendiente",
+    "addEvaluation": "Agregar evaluación",
+    "addSub": "Agregar subevaluación",
+    "remove": "Quitar",
+    "defaultName": "Evaluación {{n}}",
+    "weightSum": "Las ponderaciones suman {{sum}}%",
+    "weightSumOk": "Las ponderaciones suman 100%",
+    "groupGrade": "Nota del grupo",
+    "exam": "Examen",
+    "examWeight": "Ponderación del examen %",
+    "minExamGrade": "Nota mínima de examen",
+    "examGrade": "Nota del examen",
+    "none": "Ninguna"
+  },
+  "results": {
+    "title": "Resultados",
+    "finalGrade": "Nota final proyectada",
+    "neededGrade": "Necesaria en cada evaluación pendiente",
+    "examNeeded": "Necesaria en el examen",
+    "need": "Necesitas {{grade}}",
+    "status": {
+      "passed": "Aprobado",
+      "failed": "Reprobado",
+      "needed": "Aún alcanzable",
+      "secured": "Ya aprobado",
+      "impossible": "No alcanzable"
+    },
+    "explain": {
+      "passed": "Ya tienes todas las notas y aprobaste.",
+      "failed": "No alcanzaste los requisitos para aprobar.",
+      "needed": "Obtén al menos estas notas en todo lo pendiente.",
+      "secured": "Apruebas incluso con la nota mínima en lo que falta.",
+      "impossible": "Necesitarías más de {{max}} en las evaluaciones pendientes."
+    },
+    "examFailed": "La nota del examen está bajo el mínimo requerido de {{min}}.",
+    "warning": {
+      "WEIGHT_SUM_top": "Las ponderaciones principales más el examen no suman 100%; se ajustan proporcionalmente.",
+      "WEIGHT_SUM_group": "Las ponderaciones dentro de \"{{name}}\" no suman 100%; se ajustan proporcionalmente.",
+      "GRADE_OUT_OF_RANGE": "\"{{name}}\" está fuera de la escala {{min}}–{{max}}.",
+      "MIN_EXAM_OUT_OF_RANGE": "La nota mínima de examen está fuera de la escala {{min}}–{{max}}."
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "scale": "Escala de notas",
+    "scaleHelp": "Se aplica a todas tus asignaturas.",
+    "min": "Nota mínima",
+    "max": "Nota máxima",
+    "pass": "Nota de aprobación",
+    "presets": "Predefinidas",
+    "language": "Idioma",
+    "system": "Predeterminado del sistema",
+    "save": "Guardar",
+    "saved": "Configuración guardada",
+    "back": "Volver"
+  },
+  "errors": {
+    "EMAIL_TAKEN": "Ese correo ya está registrado.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+    "UNAUTHORIZED": "Tu sesión expiró. Inicia sesión nuevamente.",
+    "NOT_FOUND": "No encontrado.",
+    "VALIDATION": "Algunos valores no son válidos.",
+    "INVALID_SCALE": "La nota mínima debe ser menor que la de aprobación, y esta no puede superar la nota máxima.",
+    "RATE_LIMITED": "Demasiados intentos. Espera un minuto e inténtalo de nuevo.",
+    "NETWORK": "No se puede conectar con el servidor.",
+    "UNKNOWN": "Algo salió mal."
+  },
+  "sync": {
+    "title": "Sincronizar entre dispositivos (opcional)",
+    "help": "Tus asignaturas se guardan en este dispositivo. Inicia sesión en un servidor de sincronización para respaldarlas y compartirlas con tus otros dispositivos.",
+    "server": "URL del servidor",
+    "signedInAs": "Sesión iniciada como {{email}} en {{server}}",
+    "lastSynced": "Última sincronización: {{time}}",
+    "never": "nunca",
+    "syncing": "Sincronizando…",
+    "synced": "Sincronizado",
+    "failed": "Error al sincronizar",
+    "now": "Sincronizar ahora",
+    "signOut": "Cerrar sesión (conserva tus datos en este dispositivo)"
+  },
+  "data": {
+    "title": "Respaldo",
+    "help": "Exporta tus asignaturas a un archivo, o importa un archivo exportado desde cualquier dispositivo.",
+    "export": "Exportar a archivo",
+    "import": "Importar desde archivo",
+    "importDone": "Se importaron {{count}} asignaturas.",
+    "importFailed": "Ese archivo no es un respaldo de notas válido."
+  }
+}

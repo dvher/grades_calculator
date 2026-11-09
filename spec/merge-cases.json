@@ -1,0 +1,50 @@
+{
+  "description": "Sync merge rule shared by every client: per class id, the copy with the newer updatedAt wins; ties keep the local copy; the result keeps local order, then remote-only classes in remote order. `expected` lists [id, updatedAt, deleted] of the merged classes in order.",
+  "cases": [
+    {
+      "name": "remote newer wins, local newer wins, tie keeps local",
+      "local": [
+        { "id": "a", "updatedAt": 100, "deleted": false, "name": "A local" },
+        { "id": "b", "updatedAt": 300, "deleted": false, "name": "B local" },
+        { "id": "c", "updatedAt": 200, "deleted": false, "name": "C local" }
+      ],
+      "remote": [
+        { "id": "a", "updatedAt": 200, "deleted": false, "name": "A remote" },
+        { "id": "b", "updatedAt": 250, "deleted": false, "name": "B remote" },
+        { "id": "c", "updatedAt": 200, "deleted": false, "name": "C remote" }
+      ],
+      "expected": [["a", 200, false, "A remote"], ["b", 300, false, "B local"], ["c", 200, false, "C local"]]
+    },
+    {
+      "name": "remote-only classes are appended and tombstones propagate",
+      "local": [
+        { "id": "x", "updatedAt": 10, "deleted": false, "name": "X" }
+      ],
+      "remote": [
+        { "id": "y", "updatedAt": 5, "deleted": false, "name": "Y" },
+        { "id": "x", "updatedAt": 20, "deleted": true, "name": "X" },
+        { "id": "z", "updatedAt": 7, "deleted": true, "name": "Z" }
+      ],
+      "expected": [["x", 20, true, "X"], ["y", 5, false, "Y"], ["z", 7, true, "Z"]]
+    },
+    {
+      "name": "local edit after a remote delete brings the class back",
+      "local": [
+        { "id": "x", "updatedAt": 30, "deleted": false, "name": "X edited" }
+      ],
+      "remote": [
+        { "id": "x", "updatedAt": 20, "deleted": true, "name": "X" }
+      ],
+      "expected": [["x", 30, false, "X edited"]]
+    },
+    {
+      "name": "empty local takes everything remote",
+      "local": [],
+      "remote": [
+        { "id": "p", "updatedAt": 1, "deleted": false, "name": "P" },
+        { "id": "q", "updatedAt": 2, "deleted": false, "name": "Q" }
+      ],
+      "expected": [["p", 1, false, "P"], ["q", 2, false, "Q"]]
+    }
+  ]
+}

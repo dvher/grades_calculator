@@ -1,0 +1,251 @@
+{
+  "description": "Shared test vectors for the grade calculation engine. Every implementation (TypeScript, Kotlin, Swift) must pass all cases. Numbers are compared with a tolerance of 1e-6. Only the fields present in `expected` are checked; `nodes` maps node id -> projected grade.",
+  "cases": [
+    {
+      "name": "nothing entered",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": null },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 4, "examNeeded": 4, "finalGrade": 4, "nodes": { "c1": 4, "c2": 4 }, "warnings": [] }
+    },
+    {
+      "name": "partial grades, no exam minimum",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 5 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 3.4615384615, "examNeeded": 3.4615384615, "finalGrade": 4, "nodes": { "c1": 5, "c2": 3.4615384615 } }
+    },
+    {
+      "name": "exam minimum forces exam grade and lowers the rest",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 6 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 2, "examNeeded": 4, "finalGrade": 4, "nodes": { "c2": 2 } }
+    },
+    {
+      "name": "already secured without exam minimum",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 7 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": 7 }
+        ]
+      },
+      "expected": { "status": "secured", "neededGrade": null, "examNeeded": 1, "finalGrade": 5.2 }
+    },
+    {
+      "name": "high grades but exam minimum still required",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 7 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": 7 }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": null, "examNeeded": 4, "finalGrade": 6.1 }
+    },
+    {
+      "name": "impossible to pass",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 1 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": 1 }
+        ]
+      },
+      "expected": { "status": "impossible", "neededGrade": null, "examNeeded": 11, "finalGrade": 2.8 }
+    },
+    {
+      "name": "all graded and passed",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": 4.5,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 4 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": 5 }
+        ]
+      },
+      "expected": { "status": "passed", "neededGrade": null, "examNeeded": null, "finalGrade": 4.5 }
+    },
+    {
+      "name": "all graded, failed by exam minimum",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": 3.5,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 7 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": 7 }
+        ]
+      },
+      "expected": { "status": "failed", "neededGrade": null, "examNeeded": null, "finalGrade": 5.95 }
+    },
+    {
+      "name": "all graded, failed by final grade",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": 4,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": 3 },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": 3 }
+        ]
+      },
+      "expected": { "status": "failed", "finalGrade": 3.3 }
+    },
+    {
+      "name": "exam graded below minimum while other grades pending",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": 3,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 35, "grade": null },
+          { "id": "c2", "name": "Certamen 2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "failed", "neededGrade": 4.4285714286, "examNeeded": null }
+    },
+    {
+      "name": "nested group",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "tareas", "name": "Tareas", "weight": 20, "grade": null, "children": [
+            { "id": "t1", "name": "T1", "weight": 50, "grade": 6 },
+            { "id": "t2", "name": "T2", "weight": 50, "grade": null }
+          ] },
+          { "id": "c1", "name": "Certamen", "weight": 50, "grade": 4 }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 3.5, "examNeeded": 3.5, "finalGrade": 4, "nodes": { "tareas": 4.75, "t1": 6, "t2": 3.5, "c1": 4 } }
+    },
+    {
+      "name": "deeply nested groups with exam minimum",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "labs", "name": "Labs", "weight": 40, "grade": null, "children": [
+            { "id": "l1", "name": "Lab 1", "weight": 50, "grade": 5 },
+            { "id": "quizzes", "name": "Quizzes", "weight": 50, "grade": null, "children": [
+              { "id": "q1", "name": "Q1", "weight": 50, "grade": 6 },
+              { "id": "q2", "name": "Q2", "weight": 50, "grade": null }
+            ] }
+          ] },
+          { "id": "c1", "name": "Certamen", "weight": 30, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 3, "examNeeded": 4, "finalGrade": 4, "nodes": { "q2": 3, "quizzes": 4.5, "labs": 4.75, "c1": 3 } }
+    },
+    {
+      "name": "top-level weights not summing to 100 are normalised",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "a", "name": "A", "weight": 30, "grade": 5 },
+          { "id": "b", "name": "B", "weight": 30, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 3.5, "examNeeded": 3.5, "finalGrade": 4, "warnings": [ { "code": "WEIGHT_SUM", "id": null } ] }
+    },
+    {
+      "name": "group weights not summing to 100 are normalised",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 60, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "tareas", "name": "Tareas", "weight": 40, "grade": null, "children": [
+            { "id": "t1", "name": "T1", "weight": 60, "grade": 4 },
+            { "id": "t2", "name": "T2", "weight": 60, "grade": null }
+          ] }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 4, "examNeeded": 4, "finalGrade": 4, "warnings": [ { "code": "WEIGHT_SUM", "id": "tareas" } ] }
+    },
+    {
+      "name": "0-10 scale with exam minimum and nothing else pending",
+      "scale": { "min": 0, "max": 10, "pass": 5 },
+      "class": {
+        "examWeight": 50, "minExamGrade": 5, "examGrade": null,
+        "items": [
+          { "id": "a", "name": "A", "weight": 50, "grade": 8 }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": null, "examNeeded": 5, "finalGrade": 6.5 }
+    },
+    {
+      "name": "0-100 scale",
+      "scale": { "min": 0, "max": 100, "pass": 60 },
+      "class": {
+        "examWeight": 40, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "a", "name": "A", "weight": 60, "grade": 40 }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": null, "examNeeded": 90, "finalGrade": 60 }
+    },
+    {
+      "name": "other grades clamp to scale minimum while exam minimum is still needed",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 25, "minExamGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "Certamen 1", "weight": 50, "grade": 7 },
+          { "id": "c2", "name": "Certamen 2", "weight": 25, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 1, "examNeeded": 4, "finalGrade": 4.75, "nodes": { "c2": 1 } }
+    },
+    {
+      "name": "group without children behaves like a plain evaluation",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 50, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "p", "name": "Project", "weight": 50, "grade": 6, "children": [] }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": null, "examNeeded": 2, "finalGrade": 4 }
+    },
+    {
+      "name": "grade outside the scale produces a warning",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "a", "name": "A", "weight": 70, "grade": 8 }
+        ]
+      },
+      "expected": { "status": "secured", "examNeeded": 1, "finalGrade": 5.9, "warnings": [ { "code": "GRADE_OUT_OF_RANGE", "id": "a" } ] }
+    },
+    {
+      "name": "everything pending can be secured at the minimum",
+      "scale": { "min": 1, "max": 7, "pass": 1 },
+      "class": {
+        "examWeight": 50, "minExamGrade": null, "examGrade": null,
+        "items": [
+          { "id": "a", "name": "A", "weight": 50, "grade": null }
+        ]
+      },
+      "expected": { "status": "secured", "neededGrade": 1, "examNeeded": 1, "finalGrade": 1 }
+    }
+  ]
+}

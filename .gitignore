@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+*.log
+.direnv/
+result
+# android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.kotlin/
+# ios / swiftpm
+ios/.build/
+ios/xtool/
+ios/.swiftpm/

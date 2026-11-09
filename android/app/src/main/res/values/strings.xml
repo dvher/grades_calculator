@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grades Calculator</string>
+
+    <string name="auth_login">Log in</string>
+    <string name="auth_register">Create account</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_password_hint">At least 8 characters</string>
+
+    <string name="classes_select">Class</string>
+    <string name="classes_new">New class</string>
+    <string name="classes_new_name">New class</string>
+    <string name="classes_empty">You have no classes yet. Create one to start calculating.</string>
+    <string name="classes_delete">Delete class</string>
+    <string name="classes_confirm_delete">Delete \"%1$s\"? This cannot be undone.</string>
+    <string name="classes_name">Class name</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="editor_evaluations">Evaluations</string>
+    <string name="editor_name">Name</string>
+    <string name="editor_weight">Weight %</string>
+    <string name="editor_grade">Grade</string>
+    <string name="editor_pending">Pending</string>
+    <string name="editor_add_evaluation">Add evaluation</string>
+    <string name="editor_add_sub">Add sub-evaluation</string>
+    <string name="editor_remove">Remove</string>
+    <string name="editor_default_name">Evaluation %1$d</string>
+    <string name="editor_weight_sum">Weights add up to %1$s%%</string>
+    <string name="editor_weight_sum_ok">Weights add up to 100%</string>
+    <string name="editor_group_grade">Group grade</string>
+    <string name="editor_exam">Exam</string>
+    <string name="editor_exam_weight">Exam weight %</string>
+    <string name="editor_min_exam_grade">Minimum exam grade</string>
+    <string name="editor_exam_grade">Exam grade</string>
+    <string name="editor_none">None</string>
+
+    <string name="results_title">Results</string>
+    <string name="results_final_grade">Projected final grade</string>
+    <string name="results_needed_grade">Needed on each pending evaluation</string>
+    <string name="results_exam_needed">Needed on the exam</string>
+    <string name="results_need">Need %1$s</string>
+    <string name="status_passed">Passed</string>
+    <string name="status_failed">Failed</string>
+    <string name="status_needed">Still achievable</string>
+    <string name="status_secured">Already passed</string>
+    <string name="status_impossible">Not achievable</string>
+    <string name="explain_passed">All grades are in and you passed.</string>
+    <string name="explain_failed">You did not reach the passing requirements.</string>
+    <string name="explain_needed">Get at least these grades on everything still pending.</string>
+    <string name="explain_secured">You pass even with the minimum grade on what is left.</string>
+    <string name="explain_impossible">You would need more than %1$s on the pending evaluations.</string>
+    <string name="results_exam_failed">The exam grade is below the required minimum of %1$s.</string>
+    <string name="warning_weight_sum_top">Top-level weights plus the exam don\'t add up to 100%; they are scaled proportionally.</string>
+    <string name="warning_weight_sum_group">The weights inside \"%1$s\" don\'t add up to 100%%; they are scaled proportionally.</string>
+    <string name="warning_grade_out_of_range">\"%1$s\" is outside the %2$s–%3$s scale.</string>
+    <string name="warning_min_exam_out_of_range">The minimum exam grade is outside the %1$s–%2$s scale.</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_scale">Grading scale</string>
+    <string name="settings_scale_help">Applies to all your classes.</string>
+    <string name="settings_min">Lowest grade</string>
+    <string name="settings_max">Highest grade</string>
+    <string name="settings_pass">Passing grade</string>
+    <string name="settings_presets">Presets</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_system">System default</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_back">Back</string>
+
+    <string name="errors_EMAIL_TAKEN">That email is already registered.</string>
+    <string name="errors_INVALID_CREDENTIALS">Wrong email or password.</string>
+    <string name="errors_UNAUTHORIZED">Your session expired. Please log in again.</string>
+    <string name="errors_NOT_FOUND">Not found.</string>
+    <string name="errors_VALIDATION">Some values are invalid.</string>
+    <string name="errors_INVALID_SCALE">The lowest grade must be below the passing grade, which must not exceed the highest grade.</string>
+    <string name="errors_RATE_LIMITED">Too many attempts. Wait a minute and try again.</string>
+    <string name="errors_NETWORK">Cannot reach the server.</string>
+    <string name="errors_UNKNOWN">Something went wrong.</string>
+
+    <string name="settings_saved">Settings saved</string>
+
+    <string name="sync_title">Sync between devices (optional)</string>
+    <string name="sync_help">Your classes are saved on this device. Sign in to a sync server to back them up and share them with your other devices.</string>
+    <string name="sync_server">Server URL</string>
+    <string name="sync_signed_in_as">Signed in as %1$s on %2$s</string>
+    <string name="sync_last_synced">Last synced: %1$s</string>
+    <string name="sync_never">never</string>
+    <string name="sync_syncing">Syncing…</string>
+    <string name="sync_failed">Sync failed</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_sign_out">Sign out</string>
+
+    <string name="data_title">Backup</string>
+    <string name="data_help">Export your classes to a file, or import a file exported from any device.</string>
+    <string name="data_export">Export to file</string>
+    <string name="data_import">Import from file</string>
+    <string name="data_export_done">Exported.</string>
+    <plurals name="data_import_done">
+        <item quantity="one">Imported %1$d class.</item>
+        <item quantity="other">Imported %1$d classes.</item>
+    </plurals>
+    <string name="data_import_failed">That file is not a valid grades backup.</string>
+</resources>

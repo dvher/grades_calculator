@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Calculadora de Notas</string>
+
+    <string name="auth_login">Iniciar sesión</string>
+    <string name="auth_register">Crear cuenta</string>
+    <string name="auth_email">Correo</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_password_hint">Mínimo 8 caracteres</string>
+
+    <string name="classes_select">Asignatura</string>
+    <string name="classes_new">Nueva asignatura</string>
+    <string name="classes_new_name">Nueva asignatura</string>
+    <string name="classes_empty">Aún no tienes asignaturas. Crea una para empezar a calcular.</string>
+    <string name="classes_delete">Eliminar asignatura</string>
+    <string name="classes_confirm_delete">¿Eliminar \"%1$s\"? No se puede deshacer.</string>
+    <string name="classes_name">Nombre de la asignatura</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="editor_evaluations">Evaluaciones</string>
+    <string name="editor_name">Nombre</string>
+    <string name="editor_weight">Ponderación %</string>
+    <string name="editor_grade">Nota</string>
+    <string name="editor_pending">Pendiente</string>
+    <string name="editor_add_evaluation">Agregar evaluación</string>
+    <string name="editor_add_sub">Agregar subevaluación</string>
+    <string name="editor_remove">Quitar</string>
+    <string name="editor_default_name">Evaluación %1$d</string>
+    <string name="editor_weight_sum">Las ponderaciones suman %1$s%%</string>
+    <string name="editor_weight_sum_ok">Las ponderaciones suman 100%</string>
+    <string name="editor_group_grade">Nota del grupo</string>
+    <string name="editor_exam">Examen</string>
+    <string name="editor_exam_weight">Ponderación del examen %</string>
+    <string name="editor_min_exam_grade">Nota mínima de examen</string>
+    <string name="editor_exam_grade">Nota del examen</string>
+    <string name="editor_none">Ninguna</string>
+
+    <string name="results_title">Resultados</string>
+    <string name="results_final_grade">Nota final proyectada</string>
+    <string name="results_needed_grade">Necesaria en cada evaluación pendiente</string>
+    <string name="results_exam_needed">Necesaria en el examen</string>
+    <string name="results_need">Necesitas %1$s</string>
+    <string name="status_passed">Aprobado</string>
+    <string name="status_failed">Reprobado</string>
+    <string name="status_needed">Aún alcanzable</string>
+    <string name="status_secured">Ya aprobado</string>
+    <string name="status_impossible">No alcanzable</string>
+    <string name="explain_passed">Ya tienes todas las notas y aprobaste.</string>
+    <string name="explain_failed">No alcanzaste los requisitos para aprobar.</string>
+    <string name="explain_needed">Obtén al menos estas notas en todo lo pendiente.</string>
+    <string name="explain_secured">Apruebas incluso con la nota mínima en lo que falta.</string>
+    <string name="explain_impossible">Necesitarías más de %1$s en las evaluaciones pendientes.</string>
+    <string name="results_exam_failed">La nota del examen está bajo el mínimo requerido de %1$s.</string>
+    <string name="warning_weight_sum_top">Las ponderaciones principales más el examen no suman 100%; se ajustan proporcionalmente.</string>
+    <string name="warning_weight_sum_group">Las ponderaciones dentro de \"%1$s\" no suman 100%%; se ajustan proporcionalmente.</string>
+    <string name="warning_grade_out_of_range">\"%1$s\" está fuera de la escala %2$s–%3$s.</string>
+    <string name="warning_min_exam_out_of_range">La nota mínima de examen está fuera de la escala %1$s–%2$s.</string>
+
+    <string name="settings_title">Configuración</string>
+    <string name="settings_scale">Escala de notas</string>
+    <string name="settings_scale_help">Se aplica a todas tus asignaturas.</string>
+    <string name="settings_min">Nota mínima</string>
+    <string name="settings_max">Nota máxima</string>
+    <string name="settings_pass">Nota de aprobación</string>
+    <string name="settings_presets">Predefinidas</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_system">Predeterminado del sistema</string>
+    <string name="settings_save">Guardar</string>
+    <string name="settings_back">Volver</string>
+
+    <string name="errors_EMAIL_TAKEN">Ese correo ya está registrado.</string>
+    <string name="errors_INVALID_CREDENTIALS">Correo o contraseña incorrectos.</string>
+    <string name="errors_UNAUTHORIZED">Tu sesión expiró. Inicia sesión nuevamente.</string>
+    <string name="errors_NOT_FOUND">No encontrado.</string>
+    <string name="errors_VALIDATION">Algunos valores no son válidos.</string>
+    <string name="errors_INVALID_SCALE">La nota mínima debe ser menor que la de aprobación, y esta no puede superar la nota máxima.</string>
+    <string name="errors_RATE_LIMITED">Demasiados intentos. Espera un minuto e inténtalo de nuevo.</string>
+    <string name="errors_NETWORK">No se puede conectar con el servidor.</string>
+    <string name="errors_UNKNOWN">Algo salió mal.</string>
+
+    <string name="settings_saved">Configuración guardada</string>
+
+    <string name="sync_title">Sincronizar entre dispositivos (opcional)</string>
+    <string name="sync_help">Tus asignaturas se guardan en este dispositivo. Inicia sesión en un servidor de sincronización para respaldarlas y compartirlas con tus otros dispositivos.</string>
+    <string name="sync_server">URL del servidor</string>
+    <string name="sync_signed_in_as">Sesión iniciada como %1$s en %2$s</string>
+    <string name="sync_last_synced">Última sincronización: %1$s</string>
+    <string name="sync_never">nunca</string>
+    <string name="sync_syncing">Sincronizando…</string>
+    <string name="sync_failed">Error al sincronizar</string>
+    <string name="sync_now">Sincronizar ahora</string>
+    <string name="sync_sign_out">Cerrar sesión</string>
+
+    <string name="data_title">Respaldo</string>
+    <string name="data_help">Exporta tus asignaturas a un archivo, o importa un archivo exportado desde cualquier dispositivo.</string>
+    <string name="data_export">Exportar a archivo</string>
+    <string name="data_import">Importar desde archivo</string>
+    <string name="data_export_done">Exportado.</string>
+    <plurals name="data_import_done">
+        <item quantity="one">Se importó %1$d asignatura.</item>
+        <item quantity="many">Se importaron %1$d asignaturas.</item>
+        <item quantity="other">Se importaron %1$d asignaturas.</item>
+    </plurals>
+    <string name="data_import_failed">Ese archivo no es un respaldo de notas válido.</string>
+</resources>

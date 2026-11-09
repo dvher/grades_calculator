@@ -1,0 +1,28 @@
+{
+  "description": "Shared test vectors for grade-field auto formatting (autoDecimal). Digits typed without a separator get a decimal point after the longest integer prefix that does not exceed the scale max; an explicit separator ('.' or ',') is honored once and any further separators are dropped. Output always uses '.'; the UI swaps in the locale's separator.",
+  "cases": [
+    { "max": 7, "input": "", "expected": "" },
+    { "max": 7, "input": "5", "expected": "5" },
+    { "max": 7, "input": "54", "expected": "5.4" },
+    { "max": 7, "input": "543", "expected": "5.43" },
+    { "max": 7, "input": "5.", "expected": "5." },
+    { "max": 7, "input": "5..", "expected": "5." },
+    { "max": 7, "input": "5.4.", "expected": "5.4" },
+    { "max": 7, "input": "5,4", "expected": "5.4" },
+    { "max": 7, "input": "5,4,", "expected": "5.4" },
+    { "max": 7, "input": "7", "expected": "7" },
+    { "max": 7, "input": "70", "expected": "7.0" },
+    { "max": 7, "input": "0", "expected": "0" },
+    { "max": 7, "input": "05", "expected": "0.5" },
+    { "max": 7, "input": ".", "expected": "0." },
+    { "max": 7, "input": " 5-4a", "expected": "5.4" },
+    { "max": 10, "input": "1", "expected": "1" },
+    { "max": 10, "input": "10", "expected": "10" },
+    { "max": 10, "input": "100", "expected": "10.0" },
+    { "max": 10, "input": "85", "expected": "8.5" },
+    { "max": 100, "input": "55", "expected": "55" },
+    { "max": 100, "input": "555", "expected": "55.5" },
+    { "max": 100, "input": "5.5", "expected": "5.5" },
+    { "max": 100, "input": "100", "expected": "100" }
+  ]
+}

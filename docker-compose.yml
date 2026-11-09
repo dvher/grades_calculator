@@ -1,0 +1,30 @@
+services:
+  db:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_USER: grades
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-grades}
+      POSTGRES_DB: grades
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grades"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://grades:${POSTGRES_PASSWORD:-grades}@db:5432/grades
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (at least 32 characters) in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    ports:
+      - "${PORT:-3000}:3000"
+    restart: unless-stopped
+
+volumes:
+  db-data:

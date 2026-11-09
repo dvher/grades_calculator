@@ -1,0 +1,3 @@
+-keepattributes *Annotation*, InnerClasses
+-keep,includedescriptorclasses class com.diego.gradescalculator.**$$serializer { *; }
+-keepclassmembers class com.diego.gradescalculator.** { *** Companion; }

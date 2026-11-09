@@ -1,0 +1,114 @@
+{
+  "app": {
+    "title": "Grades Calculator"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters"
+  },
+  "classes": {
+    "select": "Class",
+    "new": "New class",
+    "newName": "New class",
+    "empty": "You have no classes yet. Create one to start calculating.",
+    "delete": "Delete class",
+    "confirmDelete": "Delete \"{{name}}\"? This cannot be undone.",
+    "name": "Class name"
+  },
+  "editor": {
+    "evaluations": "Evaluations",
+    "name": "Name",
+    "weight": "Weight %",
+    "grade": "Grade",
+    "pending": "Pending",
+    "addEvaluation": "Add evaluation",
+    "addSub": "Add sub-evaluation",
+    "remove": "Remove",
+    "defaultName": "Evaluation {{n}}",
+    "weightSum": "Weights add up to {{sum}}%",
+    "weightSumOk": "Weights add up to 100%",
+    "groupGrade": "Group grade",
+    "exam": "Exam",
+    "examWeight": "Exam weight %",
+    "minExamGrade": "Minimum exam grade",
+    "examGrade": "Exam grade",
+    "none": "None"
+  },
+  "results": {
+    "title": "Results",
+    "finalGrade": "Projected final grade",
+    "neededGrade": "Needed on each pending evaluation",
+    "examNeeded": "Needed on the exam",
+    "need": "Need {{grade}}",
+    "status": {
+      "passed": "Passed",
+      "failed": "Failed",
+      "needed": "Still achievable",
+      "secured": "Already passed",
+      "impossible": "Not achievable"
+    },
+    "explain": {
+      "passed": "All grades are in and you passed.",
+      "failed": "You did not reach the passing requirements.",
+      "needed": "Get at least these grades on everything still pending.",
+      "secured": "You pass even with the minimum grade on what is left.",
+      "impossible": "You would need more than {{max}} on the pending evaluations."
+    },
+    "examFailed": "The exam grade is below the required minimum of {{min}}.",
+    "warning": {
+      "WEIGHT_SUM_top": "Top-level weights plus the exam don't add up to 100%; they are scaled proportionally.",
+      "WEIGHT_SUM_group": "The weights inside \"{{name}}\" don't add up to 100%; they are scaled proportionally.",
+      "GRADE_OUT_OF_RANGE": "\"{{name}}\" is outside the {{min}}–{{max}} scale.",
+      "MIN_EXAM_OUT_OF_RANGE": "The minimum exam grade is outside the {{min}}–{{max}} scale."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "scale": "Grading scale",
+    "scaleHelp": "Applies to all your classes.",
+    "min": "Lowest grade",
+    "max": "Highest grade",
+    "pass": "Passing grade",
+    "presets": "Presets",
+    "language": "Language",
+    "system": "System default",
+    "save": "Save",
+    "saved": "Settings saved",
+    "back": "Back"
+  },
+  "errors": {
+    "EMAIL_TAKEN": "That email is already registered.",
+    "INVALID_CREDENTIALS": "Wrong email or password.",
+    "UNAUTHORIZED": "Your session expired. Please log in again.",
+    "NOT_FOUND": "Not found.",
+    "VALIDATION": "Some values are invalid.",
+    "INVALID_SCALE": "The lowest grade must be below the passing grade, which must not exceed the highest grade.",
+    "RATE_LIMITED": "Too many attempts. Wait a minute and try again.",
+    "NETWORK": "Cannot reach the server.",
+    "UNKNOWN": "Something went wrong."
+  },
+  "sync": {
+    "title": "Sync between devices (optional)",
+    "help": "Your classes are saved on this device. Sign in to a sync server to back them up and share them with your other devices.",
+    "server": "Server URL",
+    "signedInAs": "Signed in as {{email}} on {{server}}",
+    "lastSynced": "Last synced: {{time}}",
+    "never": "never",
+    "syncing": "Syncing…",
+    "synced": "Synced",
+    "failed": "Sync failed",
+    "now": "Sync now",
+    "signOut": "Sign out (keeps your data on this device)"
+  },
+  "data": {
+    "title": "Backup",
+    "help": "Export your classes to a file, or import a file exported from any device.",
+    "export": "Export to file",
+    "import": "Import from file",
+    "importDone": "Imported {{count}} classes.",
+    "importFailed": "That file is not a valid grades backup."
+  }
+}
