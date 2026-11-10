@@ -31,6 +31,7 @@ private data class SpecClass(
     override val minExamGrade: Double?,
     override val examGrade: Double?,
     override val items: List<Evaluation>,
+    override val minPresentationGrade: Double? = null,
 ) : ClassInput
 
 class CalcSpecTest {
@@ -63,6 +64,8 @@ class CalcSpecTest {
             if ("finalGrade" in e) close(r.finalGrade, num("finalGrade"), "$name finalGrade")
             if ("neededGrade" in e) close(r.neededGrade, num("neededGrade"), "$name neededGrade")
             if ("examNeeded" in e) close(r.examNeeded, num("examNeeded"), "$name examNeeded")
+            if ("presentationNeeded" in e) close(r.presentationNeeded, num("presentationNeeded"), "$name presentationNeeded")
+            if ("presentationGrade" in e) close(r.presentationGrade, num("presentationGrade"), "$name presentationGrade")
             (e["nodes"] as? JsonObject)?.forEach { (id, g) -> close(r.nodes[id]?.grade, g.jsonPrimitive.double, "$name nodes.$id") }
             (e["warnings"] as? JsonArray)?.let { ws ->
                 val want = ws.map { w -> "${w.jsonObject["code"]!!.jsonPrimitive.content}:${w.jsonObject["id"]!!.jsonPrimitive.contentOrNull}" }.sorted()

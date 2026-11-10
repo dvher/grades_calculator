@@ -37,6 +37,7 @@ final class AppModel {
         guard loading else { return }
         if let raw = try? Data(contentsOf: fileURL), let saved = try? JSONDecoder().decode(AppData.self, from: raw) {
             data = saved
+            data.classes = saved.classes.withPresentationDefault(pass: saved.scale.pass)
         }
         loading = false
         syncNow()
@@ -66,7 +67,7 @@ final class AppModel {
     }
 
     func createClass(name: String) {
-        let cls = StoredClass(name: name, examWeight: 30, minExamGrade: scale.pass, updatedAt: stamp())
+        let cls = StoredClass(name: name, examWeight: 30, minExamGrade: scale.pass, minPresentationGrade: scale.pass, updatedAt: stamp())
         change { $0.classes.append(cls) }
         selectedID = cls.id
     }
@@ -149,7 +150,7 @@ final class AppModel {
             do {
                 let res = try await api.sync(serverURL: account.serverURL, token: account.token, body)
                 // Merge into the current data so edits made during the request are kept.
-                data.classes = mergeClasses(data.classes, res.classes)
+                data.classes = mergeClasses(data.classes, res.classes.withPresentationDefault(pass: data.scale.pass))
                 if res.settings.scaleUpdatedAt > data.scaleUpdatedAt {
                     data.scale = res.settings.scale
                     data.scaleUpdatedAt = res.settings.scaleUpdatedAt
@@ -179,7 +180,7 @@ final class AppModel {
     func importBackup(_ raw: Data) -> Int? {
         guard let file = try? JSONDecoder().decode(BackupFile.self, from: raw), file.isValid else { return nil }
         // Imported classes count as fresh edits so they win over local copies and deletions.
-        let imported = file.classes.map { c -> StoredClass in
+        let imported = file.classes.withPresentationDefault(pass: file.scale.pass).map { c -> StoredClass in
             var c = c
             c.deleted = false
             c.updatedAt = stamp()

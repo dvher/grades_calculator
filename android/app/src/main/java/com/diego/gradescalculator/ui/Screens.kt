@@ -41,6 +41,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -121,6 +122,7 @@ private fun statusLabel(s: Status): String = stringResource(
         Status.NEEDED -> R.string.status_needed
         Status.SECURED -> R.string.status_secured
         Status.IMPOSSIBLE -> R.string.status_impossible
+        Status.BARRED -> R.string.status_barred
     },
 )
 
@@ -252,7 +254,7 @@ private fun ClassSelector(classes: List<StoredClass>, selected: StoredClass, sca
 private fun statusColor(s: Status): Color = when (s) {
     Status.PASSED, Status.SECURED -> MaterialTheme.colorScheme.secondary
     Status.NEEDED -> MaterialTheme.colorScheme.primary
-    Status.FAILED, Status.IMPOSSIBLE -> MaterialTheme.colorScheme.error
+    Status.FAILED, Status.IMPOSSIBLE, Status.BARRED -> MaterialTheme.colorScheme.error
 }
 
 @Composable
@@ -271,14 +273,27 @@ private fun ResultsCard(cls: StoredClass, result: CalcResult, scale: Scale) {
                     Status.NEEDED -> stringResource(R.string.explain_needed)
                     Status.SECURED -> stringResource(R.string.explain_secured)
                     Status.IMPOSSIBLE -> stringResource(R.string.explain_impossible, formatNumber(scale.max, locale))
+                    Status.BARRED ->
+                        if (result.presentationNeeded != null) stringResource(R.string.explain_barred_pending, formatNumber(scale.max, locale))
+                        else stringResource(
+                            R.string.explain_barred,
+                            formatGrade(result.presentationGrade ?: 0.0, locale),
+                            formatNumber(cls.minPresentationGrade ?: scale.pass, locale),
+                        )
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                result.neededGrade?.let { Stat(R.string.results_needed_grade, formatNeeded(it, locale)) }
-                result.examNeeded?.let { Stat(R.string.results_exam_needed, formatNeeded(it, locale)) }
-                Stat(R.string.results_final_grade, formatGrade(result.finalGrade, locale))
+                // Without the right to sit the exam, needed grades and the projected final grade don't apply.
+                val barred = result.status == Status.BARRED
+                if (!barred) result.neededGrade?.let { Stat(R.string.results_needed_grade, formatNeeded(it, locale)) }
+                if (!barred) result.examNeeded?.let { Stat(R.string.results_exam_needed, formatNeeded(it, locale)) }
+                result.presentationNeeded?.let { Stat(R.string.results_presentation_needed, formatNeeded(it, locale)) }
+                result.presentationGrade?.takeIf { result.presentationNeeded == null }?.let {
+                    Stat(R.string.results_presentation_grade, formatGrade(it, locale))
+                }
+                if (!barred) Stat(R.string.results_final_grade, formatGrade(result.finalGrade, locale))
             }
             if (result.warnings.isNotEmpty()) {
                 val min = formatNumber(scale.min, locale)
@@ -293,6 +308,8 @@ private fun ResultsCard(cls: StoredClass, result: CalcResult, scale: Scale) {
                                 else stringResource(R.string.warning_weight_sum_group, name)
                             WarningCode.GRADE_OUT_OF_RANGE -> stringResource(R.string.warning_grade_out_of_range, name, min, max)
                             WarningCode.MIN_EXAM_OUT_OF_RANGE -> stringResource(R.string.warning_min_exam_out_of_range, min, max)
+                            WarningCode.MIN_PRESENTATION_OUT_OF_RANGE ->
+                                stringResource(R.string.warning_min_presentation_out_of_range, min, max)
                         },
                         color = MaterialTheme.colorScheme.tertiary,
                         style = MaterialTheme.typography.bodySmall,
@@ -322,12 +339,16 @@ fun NumberField(
     range: ClosedFloatingPointRange<Double>? = null,
     /** Grade field: insert the decimal separator automatically based on the range max (e.g. "54" → "5.4"). */
     grade: Boolean = false,
+    /** Show 0 as an empty field with a "0" placeholder (an empty field means 0). */
+    zeroAsEmpty: Boolean = false,
+    enabled: Boolean = true,
 ) {
     val locale = currentLocale()
-    fun show(v: Double?) = v?.let { formatNumber(it, locale, 4) } ?: ""
+    fun show(v: Double?) = if (zeroAsEmpty && v == 0.0) "" else v?.let { formatNumber(it, locale, 4) } ?: ""
+    fun parsed(text: String) = parseNumber(text).let { if (zeroAsEmpty && it == null) 0.0 else it }
     var field by remember { mutableStateOf(TextFieldValue(show(value))) }
     LaunchedEffect(value, locale) {
-        if (parseNumber(field.text) != value) show(value).let { field = TextFieldValue(it, TextRange(it.length)) }
+        if (parsed(field.text) != value) show(value).let { field = TextFieldValue(it, TextRange(it.length)) }
     }
     val parsed = parseNumber(field.text)
     val invalid = parsed === Invalid || (parsed is Double && range != null && parsed !in range)
@@ -347,8 +368,10 @@ fun NumberField(
         },
         modifier = modifier,
         label = { Text(label, maxLines = 1) },
-        placeholder = placeholder?.let { { Text(it, color = MaterialTheme.colorScheme.primary, maxLines = 1) } },
+        placeholder = placeholder?.let { { Text(it, color = MaterialTheme.colorScheme.primary, maxLines = 1) } }
+            ?: if (zeroAsEmpty) { { Text("0", maxLines = 1) } } else null,
         isError = invalid,
+        enabled = enabled,
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
     )
@@ -402,6 +425,7 @@ private fun EvaluationRows(items: List<Evaluation>, result: CalcResult, scale: S
                             stringResource(R.string.editor_weight),
                             Modifier.weight(1f),
                             range = 0.0..100.0,
+                            zeroAsEmpty = true,
                         )
                         if (e.isGroup) {
                             Column(Modifier.weight(1f)) {
@@ -447,11 +471,26 @@ private fun ExamCard(cls: StoredClass, result: CalcResult, scale: Scale, vm: App
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.editor_exam), style = MaterialTheme.typography.titleMedium)
-            NumberField(cls.examWeight, { v -> vm.edit { it.copy(examWeight = v ?: 0.0) } }, stringResource(R.string.editor_exam_weight), Modifier.fillMaxWidth(), range = 0.0..100.0)
+            NumberField(
+                cls.examWeight, { v -> vm.edit { it.copy(examWeight = v ?: 0.0) } }, stringResource(R.string.editor_exam_weight),
+                Modifier.fillMaxWidth(), range = 0.0..100.0, zeroAsEmpty = true,
+            )
             NumberField(
                 cls.minExamGrade, { v -> vm.edit { it.copy(minExamGrade = v) } }, stringResource(R.string.editor_min_exam_grade),
                 Modifier.fillMaxWidth(), placeholder = stringResource(R.string.editor_none), range = scale.min..scale.max, grade = true,
             )
+            val presentationOn = cls.minPresentationGrade != null
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = presentationOn,
+                    onCheckedChange = { on -> vm.edit { it.copy(minPresentationGrade = if (on) scale.pass else null) } },
+                )
+                NumberField(
+                    cls.minPresentationGrade, { v -> if (v != null) vm.edit { it.copy(minPresentationGrade = v) } },
+                    stringResource(R.string.editor_min_presentation_grade),
+                    Modifier.weight(1f), range = scale.min..scale.max, grade = true, enabled = presentationOn,
+                )
+            }
             NumberField(
                 cls.examGrade, { v -> vm.edit { it.copy(examGrade = v) } }, stringResource(R.string.editor_exam_grade),
                 Modifier.fillMaxWidth(),

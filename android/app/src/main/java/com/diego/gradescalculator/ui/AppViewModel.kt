@@ -20,6 +20,7 @@ import com.diego.gradescalculator.data.SyncAccount
 import com.diego.gradescalculator.data.SyncBody
 import com.diego.gradescalculator.data.SyncedSettings
 import com.diego.gradescalculator.data.json
+import com.diego.gradescalculator.data.withPresentationDefault
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -111,7 +112,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun createClass(name: String) {
         val cls = StoredClass(
             id = UUID.randomUUID().toString(), name = name, examWeight = 30.0,
-            minExamGrade = _state.value.scale.pass, updatedAt = stamp(),
+            minExamGrade = _state.value.scale.pass, minPresentationGrade = _state.value.scale.pass, updatedAt = stamp(),
         )
         change { it.copy(classes = it.classes + cls) }
         _state.update { it.copy(selectedId = cls.id) }
@@ -183,7 +184,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     s.copy(
                         sync = SyncState.Idle,
                         data = d.copy(
-                            classes = mergeClasses(d.classes, res.classes),
+                            classes = mergeClasses(d.classes, res.classes.withPresentationDefault(d.scale.pass)),
                             scale = if (remoteScaleNewer) res.settings.scale else d.scale,
                             scaleUpdatedAt = maxOf(d.scaleUpdatedAt, res.settings.scaleUpdatedAt),
                             account = d.account?.copy(lastSyncAt = System.currentTimeMillis()),
@@ -231,7 +232,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 return@launch
             }
             // Imported classes count as fresh edits so they win over local copies and deletions.
-            val imported = backup.classes.map { it.copy(deleted = false, updatedAt = stamp()) }
+            val imported = backup.classes.withPresentationDefault(backup.scale.pass).map { it.copy(deleted = false, updatedAt = stamp()) }
             change { it.copy(classes = mergeClasses(it.classes, imported), scale = backup.scale, scaleUpdatedAt = stamp()) }
             _state.update { it.copy(message = Message("IMPORT_DONE", false, imported.size)) }
         }

@@ -32,6 +32,7 @@
     <string name="editor_exam">Examen</string>
     <string name="editor_exam_weight">Ponderación del examen %</string>
     <string name="editor_min_exam_grade">Nota mínima de examen</string>
+    <string name="editor_min_presentation_grade">Nota mínima de presentación a examen</string>
     <string name="editor_exam_grade">Nota del examen</string>
     <string name="editor_none">Ninguna</string>
 
@@ -39,22 +40,28 @@
     <string name="results_final_grade">Nota final proyectada</string>
     <string name="results_needed_grade">Necesaria en cada evaluación pendiente</string>
     <string name="results_exam_needed">Necesaria en el examen</string>
+    <string name="results_presentation_needed">Necesaria para presentarte al examen</string>
+    <string name="results_presentation_grade">Nota de presentación</string>
     <string name="results_need">Necesitas %1$s</string>
     <string name="status_passed">Aprobado</string>
     <string name="status_failed">Reprobado</string>
     <string name="status_needed">Aún alcanzable</string>
     <string name="status_secured">Ya aprobado</string>
     <string name="status_impossible">No alcanzable</string>
+    <string name="status_barred">Sin derecho a examen</string>
     <string name="explain_passed">Ya tienes todas las notas y aprobaste.</string>
     <string name="explain_failed">No alcanzaste los requisitos para aprobar.</string>
     <string name="explain_needed">Obtén al menos estas notas en todo lo pendiente.</string>
     <string name="explain_secured">Apruebas incluso con la nota mínima en lo que falta.</string>
     <string name="explain_impossible">Necesitarías más de %1$s en las evaluaciones pendientes.</string>
+    <string name="explain_barred">Tu nota de presentación (%1$s) es menor que el %2$s necesario para dar el examen.</string>
+    <string name="explain_barred_pending">Necesitarías más de %1$s en las evaluaciones pendientes para presentarte al examen.</string>
     <string name="results_exam_failed">La nota del examen está bajo el mínimo requerido de %1$s.</string>
     <string name="warning_weight_sum_top">Las ponderaciones principales más el examen no suman 100%; se ajustan proporcionalmente.</string>
     <string name="warning_weight_sum_group">Las ponderaciones dentro de \"%1$s\" no suman 100%%; se ajustan proporcionalmente.</string>
     <string name="warning_grade_out_of_range">\"%1$s\" está fuera de la escala %2$s–%3$s.</string>
     <string name="warning_min_exam_out_of_range">La nota mínima de examen está fuera de la escala %1$s–%2$s.</string>
+    <string name="warning_min_presentation_out_of_range">La nota mínima de presentación está fuera de la escala %1$s–%2$s.</string>
 
     <string name="settings_title">Configuración</string>
     <string name="settings_scale">Escala de notas</string>

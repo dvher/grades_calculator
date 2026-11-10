@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  DEFAULT_SCALE, mergeClasses, mergeSettings, newId, type Scale, type StoredClass,
+  DEFAULT_SCALE, mergeClasses, mergeSettings, newId, withPresentationDefault, type Scale, type StoredClass,
 } from "@grades/calc";
 import { api, ApiError } from "./api";
 import { applyLocale, type Language } from "./i18n";
@@ -31,7 +31,9 @@ const EMPTY: AppData = { classes: [], scale: DEFAULT_SCALE, scaleUpdatedAt: 0, l
 function load(): AppData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? { ...EMPTY, ...JSON.parse(raw) } : EMPTY;
+    if (!raw) return EMPTY;
+    const data: AppData = { ...EMPTY, ...JSON.parse(raw) };
+    return { ...data, classes: withPresentationDefault(data.classes, data.scale.pass) };
   } catch {
     return EMPTY;
   }
@@ -95,7 +97,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const settings = mergeSettings({ scale: cur.scale, scaleUpdatedAt: cur.scaleUpdatedAt }, res.settings);
         return {
           ...cur,
-          classes: mergeClasses(cur.classes, res.classes),
+          classes: mergeClasses(cur.classes, withPresentationDefault(res.classes, cur.scale.pass)),
           ...settings,
           account: cur.account && { ...cur.account, lastSyncAt: Date.now() },
         };
@@ -135,7 +137,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     syncStatus,
     createClass: (name) => {
       const cls: StoredClass = {
-        id: newId(), name, examWeight: 30, minExamGrade: dataRef.current.scale.pass, examGrade: null,
+        id: newId(), name, examWeight: 30, minExamGrade: dataRef.current.scale.pass,
+        minPresentationGrade: dataRef.current.scale.pass, examGrade: null,
         items: [], updatedAt: stamp(), deleted: false,
       };
       change((d) => ({ ...d, classes: [...d.classes, cls] }));
@@ -162,7 +165,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     importClasses: (classes, scale) =>
       change((d) => ({
         ...d,
-        classes: mergeClasses(d.classes, classes),
+        classes: mergeClasses(d.classes, withPresentationDefault(classes, (scale ?? d.scale).pass)),
         ...(scale ? { scale, scaleUpdatedAt: stamp() } : {}),
       })),
   };

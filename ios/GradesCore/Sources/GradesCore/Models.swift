@@ -7,6 +7,8 @@ public struct StoredClass: Codable, Equatable, Identifiable, Sendable, ClassInpu
     public var name: String
     public var examWeight: Double
     public var minExamGrade: Double?
+    /// nil turns the check off; `StoredClass.presentationUnset` (field missing in older data) is replaced on load.
+    public var minPresentationGrade: Double?
     public var examGrade: Double?
     public var items: [Evaluation]
     /// Last local modification, ms since epoch. The newest version wins when syncing.
@@ -16,19 +18,23 @@ public struct StoredClass: Codable, Equatable, Identifiable, Sendable, ClassInpu
 
     public init(
         id: String = UUID().uuidString.lowercased(), name: String, examWeight: Double, minExamGrade: Double?,
-        examGrade: Double? = nil, items: [Evaluation] = [], updatedAt: Int64, deleted: Bool = false
+        minPresentationGrade: Double? = nil, examGrade: Double? = nil, items: [Evaluation] = [], updatedAt: Int64, deleted: Bool = false
     ) {
         self.id = id
         self.name = name
         self.examWeight = examWeight
         self.minExamGrade = minExamGrade
+        self.minPresentationGrade = minPresentationGrade
         self.examGrade = examGrade
         self.items = items
         self.updatedAt = updatedAt
         self.deleted = deleted
     }
 
-    enum CodingKeys: String, CodingKey { case id, name, examWeight, minExamGrade, examGrade, items, updatedAt, deleted }
+    enum CodingKeys: String, CodingKey { case id, name, examWeight, minExamGrade, minPresentationGrade, examGrade, items, updatedAt, deleted }
+
+    /// Marks a class saved before the presentation check existed; see `withPresentationDefault`.
+    public static let presentationUnset = Double.nan
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -36,6 +42,9 @@ public struct StoredClass: Codable, Equatable, Identifiable, Sendable, ClassInpu
         name = try c.decode(String.self, forKey: .name)
         examWeight = try c.decode(Double.self, forKey: .examWeight)
         minExamGrade = try c.decodeIfPresent(Double.self, forKey: .minExamGrade)
+        minPresentationGrade = c.contains(.minPresentationGrade)
+            ? try c.decode(Double?.self, forKey: .minPresentationGrade)
+            : StoredClass.presentationUnset
         examGrade = try c.decodeIfPresent(Double.self, forKey: .examGrade)
         items = try c.decodeIfPresent([Evaluation].self, forKey: .items) ?? []
         updatedAt = try c.decodeIfPresent(Int64.self, forKey: .updatedAt) ?? 0
@@ -49,10 +58,23 @@ public struct StoredClass: Codable, Equatable, Identifiable, Sendable, ClassInpu
         try c.encode(name, forKey: .name)
         try c.encode(examWeight, forKey: .examWeight)
         try c.encode(minExamGrade, forKey: .minExamGrade)
+        try c.encode(minPresentationGrade, forKey: .minPresentationGrade)
         try c.encode(examGrade, forKey: .examGrade)
         try c.encode(items, forKey: .items)
         try c.encode(updatedAt, forKey: .updatedAt)
         try c.encode(deleted, forKey: .deleted)
+    }
+}
+
+public extension Array where Element == StoredClass {
+    /// Classes saved before the presentation check existed get it switched on at the passing grade.
+    func withPresentationDefault(pass: Double) -> [StoredClass] {
+        map { c in
+            guard c.minPresentationGrade?.isNaN == true else { return c }
+            var c = c
+            c.minPresentationGrade = pass
+            return c
+        }
     }
 }
 

@@ -32,6 +32,7 @@
     <string name="editor_exam">Exam</string>
     <string name="editor_exam_weight">Exam weight %</string>
     <string name="editor_min_exam_grade">Minimum exam grade</string>
+    <string name="editor_min_presentation_grade">Minimum grade to take the exam</string>
     <string name="editor_exam_grade">Exam grade</string>
     <string name="editor_none">None</string>
 
@@ -39,22 +40,28 @@
     <string name="results_final_grade">Projected final grade</string>
     <string name="results_needed_grade">Needed on each pending evaluation</string>
     <string name="results_exam_needed">Needed on the exam</string>
+    <string name="results_presentation_needed">Needed to qualify for the exam</string>
+    <string name="results_presentation_grade">Presentation grade</string>
     <string name="results_need">Need %1$s</string>
     <string name="status_passed">Passed</string>
     <string name="status_failed">Failed</string>
     <string name="status_needed">Still achievable</string>
     <string name="status_secured">Already passed</string>
     <string name="status_impossible">Not achievable</string>
+    <string name="status_barred">Can\'t take the exam</string>
     <string name="explain_passed">All grades are in and you passed.</string>
     <string name="explain_failed">You did not reach the passing requirements.</string>
     <string name="explain_needed">Get at least these grades on everything still pending.</string>
     <string name="explain_secured">You pass even with the minimum grade on what is left.</string>
     <string name="explain_impossible">You would need more than %1$s on the pending evaluations.</string>
+    <string name="explain_barred">Your presentation grade (%1$s) is below the %2$s needed to take the exam.</string>
+    <string name="explain_barred_pending">You would need more than %1$s on the pending evaluations to qualify for the exam.</string>
     <string name="results_exam_failed">The exam grade is below the required minimum of %1$s.</string>
     <string name="warning_weight_sum_top">Top-level weights plus the exam don\'t add up to 100%; they are scaled proportionally.</string>
     <string name="warning_weight_sum_group">The weights inside \"%1$s\" don\'t add up to 100%%; they are scaled proportionally.</string>
     <string name="warning_grade_out_of_range">\"%1$s\" is outside the %2$s–%3$s scale.</string>
     <string name="warning_min_exam_out_of_range">The minimum exam grade is outside the %1$s–%2$s scale.</string>
+    <string name="warning_min_presentation_out_of_range">The minimum grade to take the exam is outside the %1$s–%2$s scale.</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_scale">Grading scale</string>

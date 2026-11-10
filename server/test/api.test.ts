@@ -80,6 +80,16 @@ describe("sync", () => {
     expect(body.settings).toEqual({ scale: { min: 1, max: 7, pass: 4 }, scaleUpdatedAt: 0 });
   });
 
+  it("stores the presentation check, defaulting to the passing grade for older clients", async () => {
+    const token = await register("presentation@example.com");
+    let res = await sync(token, { classes: [cls()] });
+    expect(res.json().classes[0].minPresentationGrade).toBe(4);
+    res = await sync(token, { classes: [cls({ minPresentationGrade: null, updatedAt: 2000 })] });
+    expect(res.json().classes[0].minPresentationGrade).toBeNull();
+    res = await sync(token, { classes: [cls({ minPresentationGrade: 3.5, updatedAt: 3000 })] });
+    expect(res.json().classes[0].minPresentationGrade).toBe(3.5);
+  });
+
   it("keeps the newest version of each class, including deletions", async () => {
     const token = await register("lww@example.com");
     await sync(token, { classes: [cls({ name: "v2", updatedAt: 2000 })] });

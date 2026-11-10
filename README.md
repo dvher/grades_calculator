@@ -6,6 +6,7 @@ Work out the grades you still need to pass a class (asignatura). It runs as a we
 
 - **Weighted evaluations, nested as deep as you like.** An evaluation can be a group (e.g. *Tareas* 20%) with its own weighted sub-evaluations (*Tarea 1* 50%, *Tarea 2* 50%).
 - **Every class has an exam.** You set its weight and an optional minimum exam grade needed to pass.
+- **Right to sit the exam.** Optionally (on by default, at the passing grade), the weighted average of the other evaluations (*nota de presentación*, divided by their total weight) must reach a minimum to take the exam. If that's out of reach the class shows "Can't take the exam"; otherwise the grade needed to qualify is shown, and the needed grades are raised to it when it's higher.
 - **Needed grades.** Every pending evaluation gets the same needed grade, chosen so the final grade lands exactly on the passing grade. If that grade would be below the minimum exam grade, the exam is set to the minimum and the other pending grades are recalculated.
 - **Statuses:** *passed*, *failed*, *still achievable*, *already passed* and *not achievable*.
 - **Grading scale** (default 1.0–7.0, pass 4.0). It applies to all your classes and syncs between your devices.

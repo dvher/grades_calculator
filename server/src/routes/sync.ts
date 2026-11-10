@@ -8,6 +8,7 @@ interface ClassRow {
   name: string;
   exam_weight: number;
   min_exam_grade: number | null;
+  min_presentation_grade: number | null;
   exam_grade: number | null;
   items: Evaluation[];
   updated_at: string; // bigint comes back as a string
@@ -32,14 +33,19 @@ export const syncRoutes: FastifyPluginAsync = async (app) => {
       await client.query("BEGIN");
       for (const c of body.classes) {
         await client.query(
-          `INSERT INTO classes (user_id, id, name, exam_weight, min_exam_grade, exam_grade, items, updated_at, deleted)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          `INSERT INTO classes (user_id, id, name, exam_weight, min_exam_grade, exam_grade, items, updated_at, deleted,
+                                min_presentation_grade)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
+                   CASE WHEN $11 THEN (SELECT pass_grade FROM users WHERE id = $1) ELSE $10::double precision END)
            ON CONFLICT (user_id, id) DO UPDATE SET
              name = EXCLUDED.name, exam_weight = EXCLUDED.exam_weight, min_exam_grade = EXCLUDED.min_exam_grade,
-             exam_grade = EXCLUDED.exam_grade, items = EXCLUDED.items, updated_at = EXCLUDED.updated_at,
+             min_presentation_grade = EXCLUDED.min_presentation_grade, exam_grade = EXCLUDED.exam_grade, items = EXCLUDED.items, updated_at = EXCLUDED.updated_at,
              deleted = EXCLUDED.deleted
            WHERE classes.updated_at < EXCLUDED.updated_at`,
-          [userId, c.id, c.name, c.examWeight, c.minExamGrade, c.examGrade, JSON.stringify(c.items), c.updatedAt, c.deleted],
+          [
+            userId, c.id, c.name, c.examWeight, c.minExamGrade, c.examGrade, JSON.stringify(c.items), c.updatedAt, c.deleted,
+            c.minPresentationGrade ?? null, c.minPresentationGrade === undefined,
+          ],
         );
       }
       if (body.settings) {
@@ -51,7 +57,7 @@ export const syncRoutes: FastifyPluginAsync = async (app) => {
         );
       }
       const { rows } = await client.query<ClassRow>(
-        `SELECT id, name, exam_weight, min_exam_grade, exam_grade, items, updated_at, deleted
+        `SELECT id, name, exam_weight, min_exam_grade, min_presentation_grade, exam_grade, items, updated_at, deleted
          FROM classes WHERE user_id = $1 ORDER BY id`,
         [userId],
       );
@@ -67,6 +73,7 @@ export const syncRoutes: FastifyPluginAsync = async (app) => {
           name: r.name,
           examWeight: r.exam_weight,
           minExamGrade: r.min_exam_grade,
+          minPresentationGrade: r.min_presentation_grade,
           examGrade: r.exam_grade,
           items: r.items,
           updatedAt: Number(r.updated_at),

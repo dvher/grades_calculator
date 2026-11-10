@@ -35,7 +35,8 @@
     "examWeight": "Exam weight %",
     "minExamGrade": "Minimum exam grade",
     "examGrade": "Exam grade",
-    "none": "None"
+    "none": "None",
+    "minPresentationGrade": "Minimum grade to take the exam"
   },
   "results": {
     "title": "Results",
@@ -48,22 +49,28 @@
       "failed": "Failed",
       "needed": "Still achievable",
       "secured": "Already passed",
-      "impossible": "Not achievable"
+      "impossible": "Not achievable",
+      "barred": "Can't take the exam"
     },
     "explain": {
       "passed": "All grades are in and you passed.",
       "failed": "You did not reach the passing requirements.",
       "needed": "Get at least these grades on everything still pending.",
       "secured": "You pass even with the minimum grade on what is left.",
-      "impossible": "You would need more than {{max}} on the pending evaluations."
+      "impossible": "You would need more than {{max}} on the pending evaluations.",
+      "barred": "Your presentation grade ({{grade}}) is below the {{min}} needed to take the exam.",
+      "barredPending": "You would need more than {{max}} on the pending evaluations to qualify for the exam."
     },
     "examFailed": "The exam grade is below the required minimum of {{min}}.",
     "warning": {
       "WEIGHT_SUM_top": "Top-level weights plus the exam don't add up to 100%; they are scaled proportionally.",
       "WEIGHT_SUM_group": "The weights inside \"{{name}}\" don't add up to 100%; they are scaled proportionally.",
       "GRADE_OUT_OF_RANGE": "\"{{name}}\" is outside the {{min}}–{{max}} scale.",
-      "MIN_EXAM_OUT_OF_RANGE": "The minimum exam grade is outside the {{min}}–{{max}} scale."
-    }
+      "MIN_EXAM_OUT_OF_RANGE": "The minimum exam grade is outside the {{min}}–{{max}} scale.",
+      "MIN_PRESENTATION_OUT_OF_RANGE": "The minimum grade to take the exam is outside the {{min}}–{{max}} scale."
+    },
+    "presentationNeeded": "Needed to qualify for the exam",
+    "presentationGrade": "Presentation grade"
   },
   "settings": {
     "title": "Settings",

@@ -166,8 +166,11 @@ button.link.active { font-weight: 700; text-decoration: underline; }
 .weight-sum.bad { color: var(--warn); font-weight: 600; }
 button.add { margin-top: .75rem; width: 100%; justify-content: center; border-style: dashed; background: transparent; }
 
-.exam-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
-.exam-fields label { display: grid; gap: .3rem; font-size: .85rem; color: var(--muted); }
+.exam-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.exam-fields label, .exam-fields .field { display: grid; gap: .3rem; font-size: .85rem; color: var(--muted); }
+.exam-fields label.check { display: flex; align-items: center; gap: .4rem; }
+.exam-fields label.check input { width: auto; margin: 0; }
+.exam-fields input:disabled { opacity: .5; }
 .exam-fields input { color: var(--text); }
 
 @media (max-width: 560px) {
@@ -184,7 +187,7 @@ button.add { margin-top: .75rem; width: 100%; justify-content: center; border-st
 }
 .status-passed, .status-secured { background: var(--ok-bg); color: var(--ok); }
 .status-needed { background: var(--info-bg); color: var(--accent); }
-.status-failed, .status-impossible { background: var(--bad-bg); color: var(--bad); }
+.status-failed, .status-impossible, .status-barred { background: var(--bad-bg); color: var(--bad); }
 .stats { display: grid; gap: .8rem; margin: 1rem 0 0; }
 .stats dt { font-size: .82rem; color: var(--muted); }
 .stats dd { margin: 0; }

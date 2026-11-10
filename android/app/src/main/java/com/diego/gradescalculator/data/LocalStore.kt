@@ -15,6 +15,7 @@ class LocalStore(context: Context) {
     suspend fun load(): AppData = withContext(Dispatchers.IO) {
         if (!file.exists()) AppData()
         else runCatching { json.decodeFromString<AppData>(file.readText()) }.getOrElse { AppData() }
+            .let { it.copy(classes = it.classes.withPresentationDefault(it.scale.pass)) }
     }
 
     suspend fun save(data: AppData) = writeLock.withLock {

@@ -19,7 +19,7 @@ extension Status {
         switch self {
         case .passed, .secured: .green
         case .needed: .accentColor
-        case .failed, .impossible: .red
+        case .failed, .impossible, .barred: .red
         }
     }
 }
@@ -32,6 +32,9 @@ struct NumberField: View {
     var range: ClosedRange<Double>?
     /// Grade field: insert the decimal separator automatically based on the range max (e.g. "54" → "5.4").
     var grade = false
+    /// Show 0 as an empty field with a "0" placeholder (an empty field means 0).
+    var zeroAsEmpty = false
+    var enabled = true
     let onChange: (Double?) -> Void
 
     @Environment(Localizer.self) private var l
@@ -48,7 +51,8 @@ struct NumberField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-            TextField(placeholder ?? "", text: $text)
+            TextField(placeholder ?? (zeroAsEmpty ? "0" : ""), text: $text)
+                .disabled(!enabled)
                 .keyboardType(.decimalPad)
                 .textFieldStyle(.roundedBorder)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(invalid ? Color.red : .clear))
@@ -62,7 +66,7 @@ struct NumberField: View {
                         }
                     }
                     switch parseNumber(new) {
-                    case .empty: if value != nil { onChange(nil) }
+                    case .empty: if value != nil && !(zeroAsEmpty && value == 0) { onChange(nil) }
                     case .value(let v): if v != value { onChange(v) }
                     case .invalid: break
                     }
@@ -71,12 +75,15 @@ struct NumberField: View {
         .onAppear { text = format(value) }
         .onChange(of: value) { _, new in
             if case .value(let v) = parseNumber(text), v == new { return }
-            if case .empty = parseNumber(text), new == nil { return }
+            if case .empty = parseNumber(text), new == nil || (zeroAsEmpty && new == 0) { return }
             text = format(new)
         }
     }
 
-    private func format(_ v: Double?) -> String { v.map { l.number($0, maxDecimals: 4) } ?? "" }
+    private func format(_ v: Double?) -> String {
+        if zeroAsEmpty && v == 0 { return "" }
+        return v.map { l.number($0, maxDecimals: 4) } ?? ""
+    }
 }
 
 // MARK: - Classes
@@ -243,7 +250,7 @@ struct EvaluationRow: View {
                     .accessibilityLabel(l.t("editor_remove"))
             }
             HStack(alignment: .bottom, spacing: 12) {
-                NumberField(label: l.t("editor_weight"), value: e.weight, range: 0...100) { w in
+                NumberField(label: l.t("editor_weight"), value: e.weight, range: 0...100, zeroAsEmpty: true) { w in
                     model.editItems { $0.mapNode(e.id) { var n = $0; n.weight = w ?? 0; return n } }
                 }
                 if e.isGroup {
@@ -284,11 +291,20 @@ struct ExamSection: View {
     var body: some View {
         let range = model.scale.min...model.scale.max
         Section {
-            NumberField(label: l.t("editor_exam_weight"), value: cls.examWeight, range: 0...100) { v in
+            NumberField(label: l.t("editor_exam_weight"), value: cls.examWeight, range: 0...100, zeroAsEmpty: true) { v in
                 model.edit { $0.examWeight = v ?? 0 }
             }
             NumberField(label: l.t("editor_min_exam_grade"), value: cls.minExamGrade, placeholder: l.t("editor_none"), range: range, grade: true) { v in
                 model.edit { $0.minExamGrade = v }
+            }
+            Toggle(l.t("editor_min_presentation_grade"), isOn: Binding(
+                get: { cls.minPresentationGrade != nil },
+                set: { on in model.edit { $0.minPresentationGrade = on ? model.scale.pass : nil } }
+            ))
+            if cls.minPresentationGrade != nil {
+                NumberField(label: l.t("editor_min_presentation_grade"), value: cls.minPresentationGrade, range: range, grade: true) { v in
+                    if let v { model.edit { $0.minPresentationGrade = v } }
+                }
             }
             NumberField(
                 label: l.t("editor_exam_grade"),
@@ -320,6 +336,9 @@ struct ResultsSection: View {
         }
         switch result.status {
         case .impossible: return l.t("explain_impossible", l.number(model.scale.max))
+        case .barred:
+            if result.presentationNeeded != nil { return l.t("explain_barred_pending", l.number(model.scale.max)) }
+            return l.t("explain_barred", l.grade(result.presentationGrade ?? 0), l.number(cls.minPresentationGrade ?? model.scale.pass))
         default: return l.t("explain_\(result.status.rawValue)")
         }
     }
@@ -331,6 +350,7 @@ struct ResultsSection: View {
         case .weightSum: return w.id == nil ? l.t("warning_weight_sum_top") : l.t("warning_weight_sum_group", name)
         case .gradeOutOfRange: return l.t("warning_grade_out_of_range", name, min, max)
         case .minExamOutOfRange: return l.t("warning_min_exam_out_of_range", min, max)
+        case .minPresentationOutOfRange: return l.t("warning_min_presentation_out_of_range", min, max)
         }
     }
 
@@ -344,9 +364,13 @@ struct ResultsSection: View {
                     .foregroundStyle(result.status.color)
                 Text(explanation).font(.subheadline).foregroundStyle(.secondary)
                 HStack(alignment: .top, spacing: 24) {
-                    if let n = result.neededGrade { stat(l.t("results_needed_grade"), l.needed(n)) }
-                    if let n = result.examNeeded { stat(l.t("results_exam_needed"), l.needed(n)) }
-                    stat(l.t("results_final_grade"), l.grade(result.finalGrade))
+                    // Without the right to sit the exam, needed grades and the projected final grade don't apply.
+                    let barred = result.status == .barred
+                    if !barred, let n = result.neededGrade { stat(l.t("results_needed_grade"), l.needed(n)) }
+                    if !barred, let n = result.examNeeded { stat(l.t("results_exam_needed"), l.needed(n)) }
+                    if let n = result.presentationNeeded { stat(l.t("results_presentation_needed"), l.needed(n)) }
+                    else if let g = result.presentationGrade { stat(l.t("results_presentation_grade"), l.grade(g)) }
+                    if !barred { stat(l.t("results_final_grade"), l.grade(result.finalGrade)) }
                 }
                 ForEach(Array(result.warnings.enumerated()), id: \.offset) { _, w in
                     Label(warningText(w), systemImage: "exclamationmark.triangle")
