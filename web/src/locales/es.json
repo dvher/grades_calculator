@@ -35,7 +35,8 @@
     "examWeight": "Ponderación del examen %",
     "minExamGrade": "Nota mínima de examen",
     "examGrade": "Nota del examen",
-    "none": "Ninguna"
+    "none": "Ninguna",
+    "minPresentationGrade": "Nota mínima de presentación a examen"
   },
   "results": {
     "title": "Resultados",
@@ -48,22 +49,28 @@
       "failed": "Reprobado",
       "needed": "Aún alcanzable",
       "secured": "Ya aprobado",
-      "impossible": "No alcanzable"
+      "impossible": "No alcanzable",
+      "barred": "Sin derecho a examen"
     },
     "explain": {
       "passed": "Ya tienes todas las notas y aprobaste.",
       "failed": "No alcanzaste los requisitos para aprobar.",
       "needed": "Obtén al menos estas notas en todo lo pendiente.",
       "secured": "Apruebas incluso con la nota mínima en lo que falta.",
-      "impossible": "Necesitarías más de {{max}} en las evaluaciones pendientes."
+      "impossible": "Necesitarías más de {{max}} en las evaluaciones pendientes.",
+      "barred": "Tu nota de presentación ({{grade}}) es menor que el {{min}} necesario para dar el examen.",
+      "barredPending": "Necesitarías más de {{max}} en las evaluaciones pendientes para presentarte al examen."
     },
     "examFailed": "La nota del examen está bajo el mínimo requerido de {{min}}.",
     "warning": {
       "WEIGHT_SUM_top": "Las ponderaciones principales más el examen no suman 100%; se ajustan proporcionalmente.",
       "WEIGHT_SUM_group": "Las ponderaciones dentro de \"{{name}}\" no suman 100%; se ajustan proporcionalmente.",
       "GRADE_OUT_OF_RANGE": "\"{{name}}\" está fuera de la escala {{min}}–{{max}}.",
-      "MIN_EXAM_OUT_OF_RANGE": "La nota mínima de examen está fuera de la escala {{min}}–{{max}}."
-    }
+      "MIN_EXAM_OUT_OF_RANGE": "La nota mínima de examen está fuera de la escala {{min}}–{{max}}.",
+      "MIN_PRESENTATION_OUT_OF_RANGE": "La nota mínima de presentación está fuera de la escala {{min}}–{{max}}."
+    },
+    "presentationNeeded": "Necesaria para presentarte al examen",
+    "presentationGrade": "Nota de presentación"
   },
   "settings": {
     "title": "Configuración",

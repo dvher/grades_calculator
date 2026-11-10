@@ -56,6 +56,13 @@ describe("backup", () => {
     const parsed = parseBackup(JSON.stringify(file));
     expect(parsed?.classes.map((x) => x.id)).toEqual(["a"]);
   });
+  it("accepts files with and without the presentation check", () => {
+    const c = { id: "a", name: "A", examWeight: 30, minExamGrade: 4, examGrade: null, items: [], updatedAt: 1, deleted: false };
+    const scale = { min: 1, max: 7, pass: 4 };
+    expect(parseBackup(JSON.stringify(makeBackup([c], scale)))).not.toBeNull();
+    expect(parseBackup(JSON.stringify(makeBackup([{ ...c, minPresentationGrade: null }], scale)))).not.toBeNull();
+    expect(parseBackup(JSON.stringify(makeBackup([{ ...c, minPresentationGrade: "4" as unknown as number }], scale)))).toBeNull();
+  });
   it("rejects invalid files", () => {
     expect(parseBackup("nope")).toBeNull();
     expect(parseBackup(JSON.stringify({ app: "other", classes: [], scale: { min: 1, max: 7, pass: 4 } }))).toBeNull();

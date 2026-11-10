@@ -42,6 +42,7 @@ export function parseBackup(text: string): BackupFile | null {
   const ok = o.classes.every((c) =>
     typeof c?.id === "string" && typeof c.name === "string" && isNum(c.examWeight) &&
     isNumOrNull(c.minExamGrade) && isNumOrNull(c.examGrade) &&
+    (c.minPresentationGrade === undefined || isNumOrNull(c.minPresentationGrade)) &&
     Array.isArray(c.items) && c.items.every((e) => isEvaluation(e)),
   );
   return ok ? (o as BackupFile) : null;

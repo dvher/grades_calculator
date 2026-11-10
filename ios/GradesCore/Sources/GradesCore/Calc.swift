@@ -54,18 +54,25 @@ public struct Evaluation: Codable, Equatable, Identifiable, Sendable {
 public protocol ClassInput {
     var examWeight: Double { get }
     var minExamGrade: Double? { get }
+    /// Minimum average of the non-exam evaluations needed to take the exam (nota de presentación); nil = off.
+    var minPresentationGrade: Double? { get }
     var examGrade: Double? { get }
     var items: [Evaluation] { get }
 }
 
+public extension ClassInput {
+    var minPresentationGrade: Double? { nil }
+}
+
 public enum Status: String, Codable, Sendable {
-    case passed, failed, needed, secured, impossible
+    case passed, failed, needed, secured, impossible, barred
 }
 
 public enum WarningCode: String, Sendable {
     case weightSum = "WEIGHT_SUM"
     case gradeOutOfRange = "GRADE_OUT_OF_RANGE"
     case minExamOutOfRange = "MIN_EXAM_OUT_OF_RANGE"
+    case minPresentationOutOfRange = "MIN_PRESENTATION_OUT_OF_RANGE"
 }
 
 public struct CalcWarning: Equatable, Hashable, Sendable {
@@ -89,6 +96,10 @@ public struct CalcResult: Equatable, Sendable {
     /// Grade needed on the exam, or nil if the exam is graded.
     public let examNeeded: Double?
     public let examGrade: Double
+    /// Grade needed on every pending non-exam evaluation to be allowed to take the exam, or nil if not checked.
+    public let presentationNeeded: Double?
+    /// Actual or projected average of the non-exam evaluations, or nil if the presentation check doesn't apply.
+    public let presentationGrade: Double?
     public let nodes: [String: NodeResult]
     public let warnings: [CalcWarning]
 }
@@ -157,11 +168,17 @@ public func calculate(_ cls: ClassInput, scale: Scale = .default) -> CalcResult 
     if let m = minExam, m < scale.min - eps || m > scale.max + eps {
         warnings.append(CalcWarning(code: .minExamOutOfRange, id: nil))
     }
+    let minPres = cls.minPresentationGrade
+    if let m = minPres, m < scale.min - eps || m > scale.max + eps {
+        warnings.append(CalcWarning(code: .minPresentationOutOfRange, id: nil))
+    }
 
     var known = 0.0
     var pendingWeight = 0.0
     var hasPendingItems = false
+    var itemWeight = 0.0
     for l in leaves {
+        itemWeight += l.weight
         if let g = l.grade {
             known += g * l.weight
         } else {
@@ -173,6 +190,9 @@ public func calculate(_ cls: ClassInput, scale: Scale = .default) -> CalcResult 
     if let g = cls.examGrade { known += g * examWeight }
     var examFailed = false
     if let g = cls.examGrade, let m = minExam, g < m - eps { examFailed = true }
+    let knownItems = known - (cls.examGrade ?? 0) * examWeight
+    // The presentation check only matters while the exam is still ahead.
+    let presentationApplies = minPres != nil && examPending && examWeight > eps && itemWeight > eps
 
     var neededGrade: Double?
     var examNeeded: Double?
@@ -199,6 +219,24 @@ public func calculate(_ cls: ClassInput, scale: Scale = .default) -> CalcResult 
         if let n = examNeeded, n < scale.min { examNeeded = scale.min }
     }
 
+    var presentationNeeded: Double?
+    var barred = false
+    if presentationApplies, let m = minPres {
+        if !hasPendingItems || pendingWeight <= eps {
+            barred = knownItems / itemWeight < m - eps
+        } else {
+            let p = Swift.max(scale.min, (m * itemWeight - knownItems) / pendingWeight)
+            presentationNeeded = p
+            if p > scale.max + eps {
+                barred = true
+            } else if let n = neededGrade, p > n + eps {
+                // Qualifying for the exam takes more than passing would: aim for that, and need less on the exam.
+                neededGrade = p
+                examNeeded = Swift.max((scale.pass - known - pendingWeight * p) / examWeight, minExam ?? scale.min, scale.min)
+            }
+        }
+    }
+
     let projectedLeaf = neededGrade.map { clamp($0, scale.min, scale.max) } ?? scale.min
     let projectedExam = cls.examGrade ?? clamp(examNeeded ?? scale.min, scale.min, scale.max)
 
@@ -208,9 +246,15 @@ public func calculate(_ cls: ClassInput, scale: Scale = .default) -> CalcResult 
     var finalGrade = projectedExam * examWeight
     for l in leaves { finalGrade += (l.grade ?? projectedLeaf) * l.weight }
 
+    let presentationGrade = presentationApplies
+        ? (knownItems + (hasPendingItems ? pendingWeight * projectedLeaf : 0)) / itemWeight
+        : nil
+
     let status: Status
     if examFailed {
         status = .failed
+    } else if barred {
+        status = .barred
     } else if !hasPendingItems && !examPending {
         status = finalGrade >= scale.pass - eps ? .passed : .failed
     } else {
@@ -226,7 +270,8 @@ public func calculate(_ cls: ClassInput, scale: Scale = .default) -> CalcResult 
 
     return CalcResult(
         status: status, finalGrade: finalGrade, neededGrade: neededGrade, examNeeded: examNeeded,
-        examGrade: projectedExam, nodes: nodes, warnings: warnings
+        examGrade: projectedExam, presentationNeeded: presentationNeeded, presentationGrade: presentationGrade,
+        nodes: nodes, warnings: warnings
     )
 }
 

@@ -32,6 +32,8 @@ data class Evaluation(
 interface ClassInput {
     val examWeight: Double
     val minExamGrade: Double?
+    /** Minimum average of the non-exam evaluations needed to take the exam (nota de presentación); null = off. */
+    val minPresentationGrade: Double? get() = null
     val examGrade: Double?
     val items: List<Evaluation>
 }
@@ -43,9 +45,10 @@ enum class Status {
     @SerialName("needed") NEEDED,
     @SerialName("secured") SECURED,
     @SerialName("impossible") IMPOSSIBLE,
+    @SerialName("barred") BARRED,
 }
 
-enum class WarningCode { WEIGHT_SUM, GRADE_OUT_OF_RANGE, MIN_EXAM_OUT_OF_RANGE }
+enum class WarningCode { WEIGHT_SUM, GRADE_OUT_OF_RANGE, MIN_EXAM_OUT_OF_RANGE, MIN_PRESENTATION_OUT_OF_RANGE }
 
 /** [id] is null for the top level / the exam. */
 data class Warning(val code: WarningCode, val id: String?)
@@ -58,6 +61,10 @@ data class CalcResult(
     val neededGrade: Double?,
     val examNeeded: Double?,
     val examGrade: Double,
+    /** Grade needed on every pending non-exam evaluation to be allowed to take the exam, or null if not checked. */
+    val presentationNeeded: Double?,
+    /** Actual or projected average of the non-exam evaluations, or null if the presentation check doesn't apply. */
+    val presentationGrade: Double?,
     val nodes: Map<String, NodeResult>,
     val warnings: List<Warning>,
 )
@@ -127,11 +134,17 @@ fun calculate(cls: ClassInput, scale: Scale = Scale.DEFAULT): CalcResult {
     if (minExam != null && (minExam < scale.min - EPS || minExam > scale.max + EPS)) {
         warnings += Warning(WarningCode.MIN_EXAM_OUT_OF_RANGE, null)
     }
+    val minPres = cls.minPresentationGrade
+    if (minPres != null && (minPres < scale.min - EPS || minPres > scale.max + EPS)) {
+        warnings += Warning(WarningCode.MIN_PRESENTATION_OUT_OF_RANGE, null)
+    }
 
     var known = 0.0
     var pendingWeight = 0.0
     var hasPendingItems = false
+    var itemWeight = 0.0
     for (l in leaves) {
+        itemWeight += l.weight
         if (l.grade != null) known += l.grade * l.weight
         else {
             pendingWeight += l.weight
@@ -141,6 +154,9 @@ fun calculate(cls: ClassInput, scale: Scale = Scale.DEFAULT): CalcResult {
     val examPending = examGrade == null
     if (examGrade != null) known += examGrade * examWeight
     val examFailed = examGrade != null && minExam != null && examGrade < minExam - EPS
+    val knownItems = known - (examGrade ?: 0.0) * examWeight
+    // The presentation check only matters while the exam is still ahead.
+    val presentationApplies = minPres != null && examPending && examWeight > EPS && itemWeight > EPS
 
     var neededGrade: Double? = null
     var examNeeded: Double? = null
@@ -169,6 +185,23 @@ fun calculate(cls: ClassInput, scale: Scale = Scale.DEFAULT): CalcResult {
         if (examNeeded != null && examNeeded < scale.min) examNeeded = scale.min
     }
 
+    var presentationNeeded: Double? = null
+    var barred = false
+    if (presentationApplies) {
+        if (!hasPendingItems || pendingWeight <= EPS) {
+            barred = knownItems / itemWeight < minPres!! - EPS
+        } else {
+            val p = maxOf(scale.min, (minPres!! * itemWeight - knownItems) / pendingWeight)
+            presentationNeeded = p
+            if (p > scale.max + EPS) barred = true
+            else if (neededGrade != null && p > neededGrade + EPS) {
+                // Qualifying for the exam takes more than passing would: aim for that, and need less on the exam.
+                neededGrade = p
+                examNeeded = maxOf((scale.pass - known - pendingWeight * p) / examWeight, minExam ?: scale.min, scale.min)
+            }
+        }
+    }
+
     val projectedLeaf = neededGrade?.coerceIn(scale.min, scale.max) ?: scale.min
     val projectedExam = examGrade ?: (examNeeded ?: scale.min).coerceIn(scale.min, scale.max)
 
@@ -178,8 +211,13 @@ fun calculate(cls: ClassInput, scale: Scale = Scale.DEFAULT): CalcResult {
     var finalGrade = projectedExam * examWeight
     for (l in leaves) finalGrade += (l.grade ?: projectedLeaf) * l.weight
 
+    val presentationGrade = if (presentationApplies) {
+        (knownItems + if (hasPendingItems) pendingWeight * projectedLeaf else 0.0) / itemWeight
+    } else null
+
     val status = when {
         examFailed -> Status.FAILED
+        barred -> Status.BARRED
         !hasPendingItems && !examPending -> if (finalGrade >= scale.pass - EPS) Status.PASSED else Status.FAILED
         else -> {
             val values = listOfNotNull(neededGrade, examNeeded)
@@ -191,7 +229,9 @@ fun calculate(cls: ClassInput, scale: Scale = Scale.DEFAULT): CalcResult {
         }
     }
 
-    return CalcResult(status, finalGrade, neededGrade, examNeeded, projectedExam, nodes, warnings)
+    return CalcResult(
+        status, finalGrade, neededGrade, examNeeded, projectedExam, presentationNeeded, presentationGrade, nodes, warnings,
+    )
 }
 
 /** Round a needed grade up to one decimal, so reaching the shown value is always enough. */

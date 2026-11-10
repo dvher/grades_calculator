@@ -115,12 +115,32 @@ export function ClassesPage() {
               <div className="exam-fields">
                 <label>
                   {t("editor.examWeight")}
-                  <NumberInput label={t("editor.examWeight")} value={selected.examWeight} min={0} max={100} onChange={(v) => update({ examWeight: v ?? 0 })} />
+                  <NumberInput label={t("editor.examWeight")} zeroAsEmpty value={selected.examWeight} min={0} max={100} onChange={(v) => update({ examWeight: v ?? 0 })} />
                 </label>
                 <label>
                   {t("editor.minExamGrade")}
                   <NumberInput label={t("editor.minExamGrade")} grade value={selected.minExamGrade} min={scale.min} max={scale.max} placeholder={t("editor.none")} onChange={(v) => update({ minExamGrade: v })} />
                 </label>
+                <div className="field">
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={selected.minPresentationGrade != null}
+                      onChange={(e) => update({ minPresentationGrade: e.target.checked ? scale.pass : null })}
+                    />
+                    {t("editor.minPresentationGrade")}
+                  </label>
+                  <NumberInput
+                    label={t("editor.minPresentationGrade")}
+                    grade
+                    disabled={selected.minPresentationGrade == null}
+                    value={selected.minPresentationGrade ?? null}
+                    min={scale.min}
+                    max={scale.max}
+                    placeholder={t("editor.none")}
+                    onChange={(v) => v !== null && update({ minPresentationGrade: v })}
+                  />
+                </div>
                 <label>
                   {t("editor.examGrade")}
                   <NumberInput

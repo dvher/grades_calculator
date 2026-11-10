@@ -18,6 +18,11 @@ export interface SyncedSettings {
   scaleUpdatedAt: number;
 }
 
+/** Classes saved before the presentation check existed get it switched on at the passing grade. */
+export function withPresentationDefault(classes: StoredClass[], pass: number): StoredClass[] {
+  return classes.map((c) => (c.minPresentationGrade === undefined ? { ...c, minPresentationGrade: pass } : c));
+}
+
 /** Per class, keep whichever side has the newer `updatedAt` (ties keep the local copy). */
 export function mergeClasses(local: StoredClass[], remote: StoredClass[]): StoredClass[] {
   const merged = new Map<string, StoredClass>();

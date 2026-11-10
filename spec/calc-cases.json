@@ -1,5 +1,5 @@
 {
-  "description": "Shared test vectors for the grade calculation engine. Every implementation (TypeScript, Kotlin, Swift) must pass all cases. Numbers are compared with a tolerance of 1e-6. Only the fields present in `expected` are checked; `nodes` maps node id -> projected grade.",
+  "description": "Shared test vectors for the grade calculation engine. Every implementation (TypeScript, Kotlin, Swift) must pass all cases. Numbers are compared with a tolerance of 1e-6. Only the fields present in `expected` are checked; `minPresentationGrade` absent means null (check off). `nodes` maps node id -> projected grade.",
   "cases": [
     {
       "name": "nothing entered",
@@ -246,6 +246,126 @@
         ]
       },
       "expected": { "status": "secured", "neededGrade": 1, "examNeeded": 1, "finalGrade": 1 }
+    },
+    {
+      "name": "presentation check off",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": null, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 3 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": 3 }
+        ]
+      },
+      "expected": { "status": "needed", "examNeeded": 6.333333333333, "presentationNeeded": null, "presentationGrade": null }
+    },
+    {
+      "name": "barred: graded average below the presentation minimum",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 3 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": 3.5 }
+        ]
+      },
+      "expected": { "status": "barred", "presentationNeeded": null, "presentationGrade": 3.25 }
+    },
+    {
+      "name": "graded average reaches the presentation minimum",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 4 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": 5 }
+        ]
+      },
+      "expected": { "status": "needed", "examNeeded": 2.833333333333, "presentationNeeded": null, "presentationGrade": 4.5 }
+    },
+    {
+      "name": "presentation minimum below what passing needs",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 5 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 3.461538461538, "examNeeded": 3.461538461538, "presentationNeeded": 3, "presentationGrade": 4.230769230769 }
+    },
+    {
+      "name": "presentation minimum raises the needed grade and lowers the exam needed",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 2 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 6, "examNeeded": 4, "presentationNeeded": 6, "presentationGrade": 4, "finalGrade": 4 }
+    },
+    {
+      "name": "barred: presentation minimum out of reach",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4.5, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 1 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": null }
+        ]
+      },
+      "expected": { "status": "barred", "presentationNeeded": 8 }
+    },
+    {
+      "name": "presentation grade divides by the evaluations' total weight",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 30, "grade": 3 },
+          { "id": "c2", "name": "c2", "weight": 30, "grade": 4.5 }
+        ]
+      },
+      "expected": { "status": "barred", "presentationGrade": 3.75, "warnings": [ { "code": "WEIGHT_SUM", "id": null } ] }
+    },
+    {
+      "name": "presentation check ignored without an exam weight",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 0, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 50, "grade": 3 },
+          { "id": "c2", "name": "c2", "weight": 50, "grade": null }
+        ]
+      },
+      "expected": { "status": "needed", "neededGrade": 5, "presentationNeeded": null, "presentationGrade": null }
+    },
+    {
+      "name": "presentation check ignored once the exam is graded",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 4, "examGrade": 7,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 3 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": 3 }
+        ]
+      },
+      "expected": { "status": "passed", "finalGrade": 4.2, "presentationNeeded": null, "presentationGrade": null }
+    },
+    {
+      "name": "presentation minimum outside the scale",
+      "scale": { "min": 1, "max": 7, "pass": 4 },
+      "class": {
+        "examWeight": 30, "minExamGrade": null, "minPresentationGrade": 8, "examGrade": null,
+        "items": [
+          { "id": "c1", "name": "c1", "weight": 35, "grade": 5 },
+          { "id": "c2", "name": "c2", "weight": 35, "grade": 5 }
+        ]
+      },
+      "expected": { "status": "barred", "warnings": [ { "code": "MIN_PRESENTATION_OUT_OF_RANGE", "id": null } ] }
     }
   ]
 }

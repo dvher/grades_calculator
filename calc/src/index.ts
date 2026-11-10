@@ -22,13 +22,18 @@ export interface Evaluation {
 export interface ClassInput {
   examWeight: number;
   minExamGrade: number | null;
+  /**
+   * Minimum weighted average of the non-exam evaluations needed to be allowed to take the exam
+   * (nota de presentación). null (or absent) turns the check off.
+   */
+  minPresentationGrade?: number | null;
   examGrade: number | null;
   items: Evaluation[];
 }
 
-export type Status = "passed" | "failed" | "needed" | "secured" | "impossible";
+export type Status = "passed" | "failed" | "needed" | "secured" | "impossible" | "barred";
 
-export type WarningCode = "WEIGHT_SUM" | "GRADE_OUT_OF_RANGE" | "MIN_EXAM_OUT_OF_RANGE";
+export type WarningCode = "WEIGHT_SUM" | "GRADE_OUT_OF_RANGE" | "MIN_EXAM_OUT_OF_RANGE" | "MIN_PRESENTATION_OUT_OF_RANGE";
 
 export interface Warning {
   code: WarningCode;
@@ -52,6 +57,10 @@ export interface Result {
   examNeeded: number | null;
   /** Actual or projected exam grade. */
   examGrade: number;
+  /** Grade needed on every pending non-exam evaluation to be allowed to take the exam, or null if not checked. */
+  presentationNeeded: number | null;
+  /** Actual or projected average of the non-exam evaluations, or null if the presentation check doesn't apply. */
+  presentationGrade: number | null;
   nodes: Record<string, NodeResult>;
   warnings: Warning[];
 }
@@ -141,11 +150,17 @@ export function calculate(cls: ClassInput, scale: Scale = DEFAULT_SCALE): Result
   if (minExam !== null && (minExam < scale.min - EPS || minExam > scale.max + EPS)) {
     warnings.push({ code: "MIN_EXAM_OUT_OF_RANGE", id: null });
   }
+  const minPres = cls.minPresentationGrade ?? null;
+  if (minPres !== null && (minPres < scale.min - EPS || minPres > scale.max + EPS)) {
+    warnings.push({ code: "MIN_PRESENTATION_OUT_OF_RANGE", id: null });
+  }
 
   let known = 0;
   let pendingWeight = 0;
   let hasPendingItems = false;
+  let itemWeight = 0;
   for (const l of leaves) {
+    itemWeight += l.weight;
     if (l.grade !== null) known += l.grade * l.weight;
     else {
       pendingWeight += l.weight;
@@ -155,6 +170,9 @@ export function calculate(cls: ClassInput, scale: Scale = DEFAULT_SCALE): Result
   const examPending = cls.examGrade === null;
   if (!examPending) known += cls.examGrade! * examWeight;
   const examFailed = !examPending && minExam !== null && cls.examGrade! < minExam - EPS;
+  const knownItems = known - (examPending ? 0 : cls.examGrade! * examWeight);
+  // The presentation check only matters while the exam is still ahead.
+  const presentationApplies = minPres !== null && examPending && examWeight > EPS && itemWeight > EPS;
 
   let neededGrade: number | null = null;
   let examNeeded: number | null = null;
@@ -183,6 +201,22 @@ export function calculate(cls: ClassInput, scale: Scale = DEFAULT_SCALE): Result
     if (examNeeded !== null && examNeeded < scale.min) examNeeded = scale.min;
   }
 
+  let presentationNeeded: number | null = null;
+  let barred = false;
+  if (presentationApplies) {
+    if (!hasPendingItems || pendingWeight <= EPS) {
+      barred = knownItems / itemWeight < minPres! - EPS;
+    } else {
+      presentationNeeded = Math.max(scale.min, (minPres! * itemWeight - knownItems) / pendingWeight);
+      if (presentationNeeded > scale.max + EPS) barred = true;
+      else if (neededGrade !== null && presentationNeeded > neededGrade + EPS) {
+        // Qualifying for the exam takes more than passing would: aim for that, and need less on the exam.
+        neededGrade = presentationNeeded;
+        examNeeded = Math.max((scale.pass - known - pendingWeight * neededGrade) / examWeight, minExam ?? scale.min, scale.min);
+      }
+    }
+  }
+
   const projectedLeaf = neededGrade === null ? scale.min : clamp(neededGrade, scale.min, scale.max);
   const projectedExam = examPending
     ? clamp(examNeeded ?? scale.min, scale.min, scale.max)
@@ -194,8 +228,13 @@ export function calculate(cls: ClassInput, scale: Scale = DEFAULT_SCALE): Result
   let finalGrade = projectedExam * examWeight;
   for (const l of leaves) finalGrade += (l.grade ?? projectedLeaf) * l.weight;
 
+  const presentationGrade = presentationApplies
+    ? (knownItems + (hasPendingItems ? pendingWeight * projectedLeaf : 0)) / itemWeight
+    : null;
+
   let status: Status;
   if (examFailed) status = "failed";
+  else if (barred) status = "barred";
   else if (!hasPendingItems && !examPending) {
     status = finalGrade >= scale.pass - EPS ? "passed" : "failed";
   } else {
@@ -205,7 +244,9 @@ export function calculate(cls: ClassInput, scale: Scale = DEFAULT_SCALE): Result
     else status = "needed";
   }
 
-  return { status, finalGrade, neededGrade, examNeeded, examGrade: projectedExam, nodes, warnings };
+  return {
+    status, finalGrade, neededGrade, examNeeded, examGrade: projectedExam, presentationNeeded, presentationGrade, nodes, warnings,
+  };
 }
 
 /** Round a needed grade up to one decimal, so reaching the shown value is always enough. */

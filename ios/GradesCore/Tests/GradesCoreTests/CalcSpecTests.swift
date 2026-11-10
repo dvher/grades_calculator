@@ -9,6 +9,7 @@ private struct SpecFile: Decodable {
 private struct SpecClass: Decodable, ClassInput {
     let examWeight: Double
     let minExamGrade: Double?
+    let minPresentationGrade: Double?
     let examGrade: Double?
     let items: [Evaluation]
 }
@@ -24,10 +25,12 @@ private struct SpecExpected: Decodable {
     /// Outer nil: key absent (not checked). Inner nil: expected null.
     let neededGrade: Double??
     let examNeeded: Double??
+    let presentationNeeded: Double??
+    let presentationGrade: Double??
     let nodes: [String: Double]?
     let warnings: [SpecWarning]?
 
-    enum CodingKeys: String, CodingKey { case status, finalGrade, neededGrade, examNeeded, nodes, warnings }
+    enum CodingKeys: String, CodingKey { case status, finalGrade, neededGrade, examNeeded, presentationNeeded, presentationGrade, nodes, warnings }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -35,6 +38,8 @@ private struct SpecExpected: Decodable {
         finalGrade = try c.decodeIfPresent(Double.self, forKey: .finalGrade)
         neededGrade = c.contains(.neededGrade) ? .some(try c.decode(Double?.self, forKey: .neededGrade)) : .none
         examNeeded = c.contains(.examNeeded) ? .some(try c.decode(Double?.self, forKey: .examNeeded)) : .none
+        presentationNeeded = c.contains(.presentationNeeded) ? .some(try c.decode(Double?.self, forKey: .presentationNeeded)) : .none
+        presentationGrade = c.contains(.presentationGrade) ? .some(try c.decode(Double?.self, forKey: .presentationGrade)) : .none
         nodes = try c.decodeIfPresent([String: Double].self, forKey: .nodes)
         warnings = try c.decodeIfPresent([SpecWarning].self, forKey: .warnings)
     }
@@ -78,6 +83,8 @@ private func close(_ actual: Double?, _ expected: Double?, _ label: String) {
         if let f = e.finalGrade { close(r.finalGrade, f, "\(c.name) finalGrade") }
         if let n = e.neededGrade { close(r.neededGrade, n, "\(c.name) neededGrade") }
         if let n = e.examNeeded { close(r.examNeeded, n, "\(c.name) examNeeded") }
+        if let n = e.presentationNeeded { close(r.presentationNeeded, n, "\(c.name) presentationNeeded") }
+        if let n = e.presentationGrade { close(r.presentationGrade, n, "\(c.name) presentationGrade") }
         for (id, g) in e.nodes ?? [:] { close(r.nodes[id]?.grade, g, "\(c.name) nodes.\(id)") }
         if let ws = e.warnings {
             let want = ws.map { "\($0.code):\($0.id ?? "nil")" }.sorted()
@@ -123,8 +130,16 @@ private func close(_ actual: Double?, _ expected: Double?, _ label: String) {
     let cls = try JSONDecoder().decode(StoredClass.self, from: Data(json.utf8))
     #expect(cls.items.count == 1)
     #expect(cls.updatedAt == 1792827980468)
-    let body = String(decoding: try JSONEncoder().encode(cls), as: UTF8.self)
+    // Older data without the presentation check gets it switched on at the passing grade.
+    let migrated = [cls].withPresentationDefault(pass: 4)[0]
+    #expect(migrated.minPresentationGrade == 4)
+    let body = String(decoding: try JSONEncoder().encode(migrated), as: UTF8.self)
     #expect(body.contains("\"minExamGrade\":null"))
+    #expect(body.contains("\"minPresentationGrade\":4"))
+
+    let off = #"{"id":"1","name":"X","examWeight":30,"minExamGrade":null,"minPresentationGrade":null,"examGrade":null,"items":[]}"#
+    let offCls = try JSONDecoder().decode(StoredClass.self, from: Data(off.utf8))
+    #expect([offCls].withPresentationDefault(pass: 4)[0].minPresentationGrade == nil)
 }
 
 private struct MergeEntry: Decodable {

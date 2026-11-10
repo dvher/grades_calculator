@@ -44,6 +44,8 @@ const classFields = z.object({
   name: z.string().trim().min(1).max(100),
   examWeight: z.number().finite().min(0).max(100),
   minExamGrade: grade.nullable(),
+  /** Absent from older clients; stored as the user's passing grade then. */
+  minPresentationGrade: grade.nullable().optional(),
   examGrade: grade.nullable(),
   items: z.array(evaluation).max(100),
   /** Last local modification, ms since epoch (set by the device). */

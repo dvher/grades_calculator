@@ -22,6 +22,8 @@ describe("spec/calc-cases.json", () => {
       if ("finalGrade" in e) close(r.finalGrade, e.finalGrade as number, "finalGrade");
       if ("neededGrade" in e) close(r.neededGrade, e.neededGrade as number | null, "neededGrade");
       if ("examNeeded" in e) close(r.examNeeded, e.examNeeded as number | null, "examNeeded");
+      if ("presentationNeeded" in e) close(r.presentationNeeded, e.presentationNeeded as number | null, "presentationNeeded");
+      if ("presentationGrade" in e) close(r.presentationGrade, e.presentationGrade as number | null, "presentationGrade");
       if ("nodes" in e) {
         for (const [id, g] of Object.entries(e.nodes as Record<string, number>)) {
           close(r.nodes[id]?.grade ?? null, g, `nodes.${id}`);

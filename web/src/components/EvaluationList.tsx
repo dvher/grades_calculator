@@ -38,6 +38,7 @@ export function EvaluationList({ items, result, scale, depth, onChange, onRemove
               <label className="field-inline">
                 <NumberInput
                   className="weight"
+                  zeroAsEmpty
                   label={t("editor.weight")}
                   value={e.weight}
                   min={0}

@@ -13,6 +13,8 @@ data class StoredClass(
     val name: String,
     override val examWeight: Double,
     override val minExamGrade: Double? = null,
+    /** null turns the check off; [PRESENTATION_UNSET] (field missing in older data) is replaced on load. */
+    override val minPresentationGrade: Double? = PRESENTATION_UNSET,
     override val examGrade: Double? = null,
     override val items: List<Evaluation> = emptyList(),
     /** Last local modification, ms since epoch. The newest version wins when syncing. */
@@ -20,6 +22,13 @@ data class StoredClass(
     /** Deleted classes are kept as tombstones so the deletion syncs to other devices. */
     val deleted: Boolean = false,
 ) : ClassInput, Versioned
+
+/** Marks a class saved before the presentation check existed; see [withPresentationDefault]. */
+val PRESENTATION_UNSET = Double.NaN
+
+/** Classes saved before the presentation check existed get it switched on at the passing grade. */
+fun List<StoredClass>.withPresentationDefault(pass: Double): List<StoredClass> =
+    map { if (it.minPresentationGrade?.isNaN() == true) it.copy(minPresentationGrade = pass) else it }
 
 @Serializable
 data class SyncedSettings(val scale: Scale, val scaleUpdatedAt: Long)
